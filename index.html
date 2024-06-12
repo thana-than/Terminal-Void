@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLI Game</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #000;
+            color: #0f0;
+        }
+
+        .commandBlock {
+            margin-block-end: 1em;
+        }
+
+        .command {
+            color: #0f0;
+        }
+
+        .response {
+            color: #fff;
+        }
+
+        .textFile p {
+            margin-block-start: 0;
+            margin-block-end: 0;
+        }
+
+        #cli {
+            width: 600px;
+            margin: 50px auto;
+            padding: 10px;
+            border: 1px solid #0f0;
+        }
+
+        #output {
+            height: 300px;
+            overflow-y: auto;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            background: #000;
+            color: #0f0;
+            border: solid;
+            border-width: 1px 0 0 0;
+            border-color: #0f0;
+            padding-top: 10px;
+            outline: none;
+        }
+
+        /* input:focus-visible {
+
+        } */
+
+        textarea {
+            border-color: #f00;
+            border-width: 1px;
+        }
+
+        img {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cli">
+        <div id="output"></div>
+        <input type="text" id="input" autofocus>
+    </div>
+    <script src="js/game.js"></script>
+</body>
+
+</html>
+
+</html>
