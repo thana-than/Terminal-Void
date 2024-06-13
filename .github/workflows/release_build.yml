@@ -57,7 +57,7 @@ jobs:
 
     - name: Push to itch.io
       #*Only execute this step if the previous steps were successful
-      if:  env.EXIT_CODE == '0'
+      if:  false #*env.EXIT_CODE == '0'
       uses: manleydev/butler-publish-itchio-action@master
       env:
         BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
