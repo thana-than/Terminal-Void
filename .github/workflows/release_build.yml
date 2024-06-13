@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Node.js
       uses: actions/setup-node@v2
@@ -45,3 +45,18 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: npx semantic-release
+
+    - name: Capture version
+      run: echo ::set-output name=version::$(node -p "require('./package.json').version")
+      id: set_version
+      continue-on-error: true
+
+    - name: Push to itch.io
+      uses: Ayowel/butler-to-itch@v1
+      with:
+        butler_key: ${{ secrets.BUTLER_CREDENTIALS }}
+        itch_user: ThanaThan
+        itch_game: terminal-void
+        version: ${{ steps.set_version.outputs.version }}
+        files: |
+          release.zip
