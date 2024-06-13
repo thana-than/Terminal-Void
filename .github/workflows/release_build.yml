@@ -45,7 +45,7 @@ jobs:
       id: semantic-release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #*Runs semantic release, then checks if the output claims there are no relevant changes.
+      #*Runs semantic release, echos the output, then sets SKIP_UPLOAD if it detects the no relevant changes string
       run: |
         output=$(npx semantic-release)
         echo "$output"
