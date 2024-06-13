@@ -61,6 +61,7 @@ jobs:
       continue-on-error: true
 
     - name: Push to itch.io
+      if: success() # Only execute this step if the previous steps were successful
       uses: manleydev/butler-publish-itchio-action@master
       env:
         BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
