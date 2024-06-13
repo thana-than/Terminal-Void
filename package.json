@@ -1,6 +1,5 @@
 {
-  "name": "mindcligame",
-  "version": "0.0.0",
+  "name": "terminal-void",
   "description": "A game about space travel, communication, and command line.",
   "main": "index.html",
   "private": true,
