@@ -1,5 +1,6 @@
 {
   "name": "terminal-void",
+  "version": "v0.0.0",
   "description": "A game about space travel, communication, and command line.",
   "main": "index.html",
   "private": true,

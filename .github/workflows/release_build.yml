@@ -64,5 +64,5 @@ jobs:
         ITCH_USER: ThanaThan
         ITCH_GAME: terminal-void
         CHANNEL: HTML5
-        VERSION: env.VER
+        VERSION: $VER
         PACKAGE:  release.zip
