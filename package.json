@@ -19,6 +19,26 @@
     "npm-run-all": "^4.1.5",
     "semantic-release": "^24.0.0"
   },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/github",
+        {
+          "assets": [
+            {
+              "path": "release.zip",
+              "label": "Release"
+            }
+          ]
+        }
+      ]
+    ]
+  },
   "author": "ThanaThan",
   "license": "MIT",
   "repository": {
