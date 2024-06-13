@@ -2,4 +2,4 @@ css
 js
 build
 fileStructure.json
-index.hml
+index.html
