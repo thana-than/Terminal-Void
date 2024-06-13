@@ -47,7 +47,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: | 
         npx semantic-release
-        echo "##[set-output name=exit-code;]$?" #* Returns -1 if no relevant changes were detected
+        echo "EXIT_CODE=$?" >> $GITHUB_ENV
+        #* Returns -1 if no relevant changes were detected
 
     - name: Capture version
       run: echo ::set-output name=version::$(node -p "require('./package.json').version")
@@ -55,7 +56,8 @@ jobs:
       continue-on-error: true
 
     - name: Push to itch.io
-      if:  ${{ steps.semantic-release.outputs.exit-code }} == 0 #*Only execute this step if the previous steps were successful
+      #*Only execute this step if the previous steps were successful
+      if:  env.EXIT_CODE == '0'
       uses: manleydev/butler-publish-itchio-action@master
       env:
         BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
