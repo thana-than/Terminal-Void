@@ -53,7 +53,7 @@ jobs:
 
     - name: Push to itch.io
       uses: manleydev/butler-publish-itchio-action@master
-      with:
+      env:
         BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
         ITCH_USER: ThanaThan
         ITCH_GAME: terminal-void
