@@ -49,7 +49,7 @@ jobs:
       #*The && statement ensures SKIP_UPLOAD is only set to true if the no relevant changes string is found
       run: | 
         npx semantic-release
-        grep "There are no relevant changes, so no new version is released." |
+        grep "There are no relevant changes, so no new version is released." \
         && echo "SKIP_UPLOAD=true" >> $GITHUB_ENV  
 
     - name: Capture version
