@@ -51,18 +51,18 @@ jobs:
         #* Returns -1 if no relevant changes were detected
 
     - name: Capture version
-      run: echo ::set-output name=version::$(node -p "require('./package.json').version")
+      run: echo "VER=$(node -p 'require(./package.json).version')" >> $GITHUB_ENV
       id: set_version
       continue-on-error: true
 
     - name: Push to itch.io
       #*Only execute this step if the previous steps were successful
-      if:  false #*env.EXIT_CODE == '0'
+      if:  env.EXIT_CODE == '0'
       uses: manleydev/butler-publish-itchio-action@master
       env:
         BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
         ITCH_USER: ThanaThan
         ITCH_GAME: terminal-void
         CHANNEL: HTML5
-        VERSION: ${{ steps.set_version.outputs.version }}
+        VERSION: env.VER
         PACKAGE:  release.zip
