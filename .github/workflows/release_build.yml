@@ -51,7 +51,7 @@ jobs:
         #* Returns -1 if no relevant changes were detected
 
     - name: Capture version
-      run: echo "VER=$(node -p 'require(./package.json).version')" >> $GITHUB_ENV
+      run: echo "VER=$(node -p \"require('./package.json').version\")" >> $GITHUB_ENV
       id: set_version
       continue-on-error: true
 
