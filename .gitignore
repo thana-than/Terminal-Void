@@ -1,6 +1,10 @@
 # Node modules directory
 node_modules/
 
+#Build
+[Bb]build/
+[Bb]uilds/
+
 # Log files
 npm-debug.log*
 yarn-debug.log*

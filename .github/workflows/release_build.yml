@@ -1,0 +1,51 @@
+name: Release Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build for Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Generate file structure
+      run: |
+        python build_gameFolders.py
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        # body: |
+        #   Changes in this Release
+        #   - First Change
+        #   - Second Change
+        # draft: false
+        # prerelease: false
+
+    
+
+    # - name: Commit and push changes
+    #   run: |
+    #     git config --global user.name "github-actions[bot]"
+    #     git config --global user.email "github-actions[bot]@users.noreply.github.com"
+    #     git add fileStructure.json -f
+    #     git commit -m "Update fileStructure.json"
+    #     git push
+      # env:
+      #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

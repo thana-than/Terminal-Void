@@ -4,9 +4,10 @@
   "description": "A game about space travel, communication, and command line.",
   "main": "index.html",
   "scripts": {
-    "build": "python generate_file_structure.py",
     "start": "npm-run-all --parallel watch:server watch:browser",
-    "watch:server": "nodemon --watch gameFolders -e * --exec  npm run build",
+    "dev": "python build_gameFolders.py --dev",
+    "build": "python build_gameFolders.py",
+    "watch:server": "nodemon --watch gameFolders -e * --exec  npm run dev",
     "watch:browser": "browser-sync start --server --files \"*.html, *.js, *.css,css/*.css, js/*.js, *.json\""
   },
   "devDependencies": {
