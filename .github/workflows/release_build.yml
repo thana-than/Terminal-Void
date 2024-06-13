@@ -44,7 +44,16 @@ jobs:
     - name: Run semantic-release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: npx semantic-release
+      run: | #* Runs semantic-release but exits this action if no relevant changes were detected
+        npx semantic-release
+        SEMANTIC_RELEASE_EXIT_CODE=$?
+        if [ $SEMANTIC_RELEASE_EXIT_CODE -eq 1 ]; then
+          echo "No relevant changes detected, skipping remaining steps."
+          exit 0 # Exit successfully if no changes to publish
+        elif [ $SEMANTIC_RELEASE_EXIT_CODE -ne 0 ]; then
+          echo "Semantic Release failed with exit code $SEMANTIC_RELEASE_EXIT_CODE."
+          exit 1 # Exit with error if Semantic Release fails
+        fi
 
     - name: Capture version
       run: echo ::set-output name=version::$(node -p "require('./package.json').version")
