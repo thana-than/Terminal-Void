@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-
+      
 permissions:
   contents: write
 
@@ -34,3 +34,4 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
+        prerelease: true
