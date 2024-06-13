@@ -52,11 +52,11 @@ jobs:
       continue-on-error: true
 
     - name: Push to itch.io
-      uses: Ayowel/butler-to-itch@v1
+      uses: manleydev/butler-publish-itchio-action@master
       with:
-        butler_key: ${{ secrets.BUTLER_CREDENTIALS }}
-        itch_user: ThanaThan
-        itch_game: terminal-void
-        version: ${{ steps.set_version.outputs.version }}
-        files: |
-          release.zip
+        BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
+        ITCH_USER: ThanaThan
+        ITCH_GAME: terminal-void
+        CHANNEL: HTML5
+        VERSION: ${{ steps.set_version.outputs.version }}
+        PACKAGE:  release.zip
