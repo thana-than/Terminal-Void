@@ -46,9 +46,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: | 
-        npx semantic-release
-        echo "EXIT_CODE=$?" >> $GITHUB_ENV
-        #* Returns -1 if no relevant changes were detected
+        echo "EXIT_CODE=$(npx semantic-release)" >> $GITHUB_ENV
 
     - name: Capture version
       run: echo "VER=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
