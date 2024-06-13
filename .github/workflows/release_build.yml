@@ -47,13 +47,11 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #*Runs semantic release, then checks if the output claims there are no relevant changes.
       #*The && statement ensures SKIP_UPLOAD is only set to true if the no relevant changes string is found
-      run: >
+      run: |
         npx semantic-release
-
-    - name: Check if upload
-      run: >
-        grep "There are no relevant changes, so no new version is released."
-        && echo "SKIP_UPLOAD=true" >> $GITHUB_ENV  
+        if grep -q "There are no relevant changes, so no new version is released."; then
+          echo "SKIP_UPLOAD=true" >> $GITHUB_ENV
+        fi
 
     - name: Capture version
       run: echo "VER=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
