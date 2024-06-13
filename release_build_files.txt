@@ -1,5 +1,6 @@
 css
 js
 build
+data
 fileStructure.json
 index.html
