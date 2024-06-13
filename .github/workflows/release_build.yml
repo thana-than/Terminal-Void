@@ -42,16 +42,20 @@ jobs:
       shell: bash
 
     - name: Run semantic-release
+      id: semantic_release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: npx semantic-release
+      run: |
+        npx semantic-release | tee release_output.txt
+        RELEASE_URL=$(grep -o 'https://github.com/[^ ]*' release_output.txt | head -n 1)
+        echo "RELEASE_URL=${RELEASE_URL}" >> $GITHUB_ENV
 
     - name: Upload release asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ env.RELEASE_URL }}
         asset_path: ./release.zip
         asset_name: release.zip
         asset_content_type: application/zip
