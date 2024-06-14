@@ -5,6 +5,8 @@ let currentDirectory;
 let build;
 const REGEX_SLASH = /\/|\\/
 
+import { Command } from './command.js';
+
 //TODO clean this shit up (move to other files)
 
 async function initialize() {
