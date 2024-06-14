@@ -27,14 +27,14 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+      #* Needed for build step
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    - name: Generate file structure
-      run: |
-        python build_gameFolders.py
+    - name: Build the project
+      run: npm run build
 
     - name: Create zip file
       run: |
