@@ -25,10 +25,11 @@ def build_file_structure(directory, isReleaseBuild):
                 shutil.copy(source_path, path_link)
 
             #* Add file to json
+            _name, _ext = os.path.splitext(entry)
             file_structure["children"].append({
                 "pathLink": path_link,
-                "name": entry,
-                "type": "file"
+                "name": _name,
+                "type": _ext
             })
     return file_structure
 
