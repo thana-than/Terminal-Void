@@ -3,8 +3,7 @@ let historyIndex = -1;
 let build;
 
 import { Directory } from './dir.js';
-
-//TODO clean this shit up (move to other files)
+import { Command } from './command.js';
 
 async function initialize() {
     //*Load json
@@ -24,12 +23,6 @@ function log(logText) {
         console.log(logText)
 }
 
-// Function to list contents of the current directory
-function listContents() {
-    const contents = Array.from(Directory.current.children.values(), (n) => n.name);
-    return contents.join('<br>');
-}
-
 function print(text) {
     const output = document.getElementById('output');
     const div = document.createElement('div');
@@ -46,12 +39,8 @@ function printCommand(command, response) {
 
 function sendCommand(command) {
     let response;
-    //TODO command parsing
-    const cleaned_command = command.toLowerCase().trim()
-    if (cleaned_command == "ls")
-        response = listContents();
-    else
-        response = Directory.cd(cleaned_command);
+    const cleaned_command = command.toLowerCase()
+    response = Command.Run(cleaned_command);
     printCommand(command, response);
 }
 
