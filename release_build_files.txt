@@ -1,6 +1,6 @@
 css
 dist
 build
-data
+dist
 fileStructure.json
 index.html
