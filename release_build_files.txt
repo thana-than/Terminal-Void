@@ -1,5 +1,5 @@
 css
-js
+dist
 build
 data
 fileStructure.json

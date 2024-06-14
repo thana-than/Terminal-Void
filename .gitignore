@@ -5,6 +5,7 @@ node_modules/
 [Bb]build/
 [Bb]uilds/
 release.zip
+dist/
 
 # Log files
 npm-debug.log*

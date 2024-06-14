@@ -4,11 +4,11 @@
   "main": "index.html",
   "private": true,
   "scripts": {
-    "start": "npm-run-all --parallel watch:server watch:browser",
-    "dev": "python build_gameFolders.py --dev",
-    "build": "python build_gameFolders.py",
-    "watch:server": "nodemon --watch gameFolders -e * --exec  npm run dev",
-    "watch:browser": "browser-sync start --server --files \"*.html, *.js, *.css,css/*.css, js/*.js, *.json\""
+    "start": "npm-run-all --parallel watch:server watch:browser dev",
+    "dev": "python build_gameFolders.py --dev && webpack --mode=development --watch",
+    "build": "python build_gameFolders.py && webpack --mode=production",
+    "watch:server": "nodemon --watch gameFolders -e * --exec  python build_gameFolders.py --dev",
+    "watch:browser": "browser-sync start --server --files \"dist/*, *.json, *.html, *.css, *.js\""
   },
   "devDependencies": {
     "@semantic-release/github": "^10.0.6",
@@ -17,7 +17,9 @@
     "browser-sync": "^3.0.2",
     "nodemon": "^3.1.3",
     "npm-run-all": "^4.1.5",
-    "semantic-release": "^24.0.0"
+    "semantic-release": "^24.0.0",
+    "webpack": "^5.92.0",
+    "webpack-cli": "^5.1.4"
   },
   "release": {
     "branches": [
