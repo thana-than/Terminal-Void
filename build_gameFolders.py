@@ -25,10 +25,11 @@ def build_file_structure(directory, isReleaseBuild):
                 shutil.copy(source_path, path_link)
 
             #* Add file to json
+            _name, _ext = os.path.splitext(entry)
             file_structure["children"].append({
                 "pathLink": path_link,
-                "name": entry,
-                "type": "file"
+                "name": _name,
+                "type": _ext
             })
     return file_structure
 
@@ -38,7 +39,7 @@ def generate_file_hash_name(full_path, file_name):
 
 isDevBuild = len(sys.argv) > 1 and sys.argv[1] in ("--dev", "-d")
 isReleaseBuild = not isDevBuild
-buildTypeName = "release" if isReleaseBuild else "development"
+buildTypeName = "RELEASE" if isReleaseBuild else "DEV"
 fileStructureJSON = 'fileStructure.json'
 print(f"Creating {buildTypeName} build.")
 
@@ -53,8 +54,13 @@ if (isReleaseBuild):
 print(f"Building file structure from folder {directory_path}")
 file_structure = build_file_structure(directory_path, isReleaseBuild)
 
+json_structure = {
+    "build": buildTypeName,
+    "file_structure": file_structure 
+}
+
 print(f"Saving {fileStructureJSON}")
 with open(fileStructureJSON, 'w') as f:
-    json.dump(file_structure, f, indent=2)
+    json.dump(json_structure, f, indent=2)
 print(f'File structure has been saved to {fileStructureJSON}')
 print(f"{buildTypeName} build complete!")
