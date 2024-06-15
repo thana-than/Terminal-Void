@@ -1,4 +1,4 @@
-const REGEX_SLASH = /[\\/]/; // Assuming this is defined somewhere
+const REGEX_SLASH = /[\\/]/;
 
 class Directory {
     static root;
