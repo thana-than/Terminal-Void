@@ -11,12 +11,16 @@ def build_file_structure(directory, isReleaseBuild):
         "children": []
     }
 
+    children = os.listdir(directory)
+    if len(children) == 0: return
+
     for entry in os.listdir(directory):
         source_path = os.path.join(directory, entry)
         path_link = source_path
         if os.path.isdir(source_path):
-            #* Add directory to json (recursively)
-            file_structure["children"].append(build_file_structure(source_path, isReleaseBuild))
+            #* Add directory to json (recursively) ((if it's not empty))
+            subDir = build_file_structure(source_path, isReleaseBuild)
+            if subDir: file_structure["children"].append(subDir)
         else:
             if isReleaseBuild: #* If release build, copy the object to the build folder
                 linkName = generate_file_hash_name(source_path, entry) #* Generate a name using a hash of the path so that there are no accidental copies
