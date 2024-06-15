@@ -82,7 +82,7 @@ const LIST = commandFactory({
         }
 
         function ls(node) {
-            return Array.from(node.children.values(), (n) => n.name);
+            return Array.from(node.children.values(), (n) => n.fullName);
         }
     }
 })

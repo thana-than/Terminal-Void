@@ -7,6 +7,7 @@ class Directory {
     static cd(path) {
         let n = Directory.get(path)
         if (!n) return `Path '${path}' is not a directory.`;
+        if (n.isFile) return `Path  '${path}' is a file, not a directory.`;
 
         Directory.current = n;
         return n.path();
@@ -34,11 +35,15 @@ class Directory {
             //* Test for a child in our current node
             //* Ignore dots or blanks, as that keeps us on the current node
             else if (next != "." && next != '') {
-                nextNode = currentNode.children.get(next);
+                nextNode = currentNode.getChild(next);
             }
 
             //* If at any point we lose our node (or the node is a file), that means the path is invalid
-            if (!nextNode || nextNode.isFile)
+            if (!nextNode)
+                return null;
+
+            //* This check confirms that a file isn't used mid-path. Files are only allowed to be at the end of the path
+            if (nextNode != currentNode && currentNode.isFile)
                 return null;
 
             currentNode = nextNode
@@ -76,8 +81,26 @@ class PathNode {
         this.type = jsonNode["type"]
         this.isFile = this.type != "directory"
         this.parent = parent
-        if (!this.isFile)
-            this.children = new Map();
+        this.gameExt = jsonNode["gameExt"]
+        this.fullName = this.name;
+        if (this.isFile) { this.fullName += `\.${this.gameExt}`; }
+        else { this.children = new Map(); }
+    }
+
+    getChild(node) {
+        if (!this.children)
+            return false;
+
+        const arr = node.split(/\.(.*)/)
+        const _name = arr[0]
+        const _ext = arr[1]
+
+        const child = this.children.get(_name);
+        if (!child) { return null; }
+
+        if (_ext && _ext != "" && _ext != child.gameExt) { return null; }
+
+        return child;
     }
 
     path() {
