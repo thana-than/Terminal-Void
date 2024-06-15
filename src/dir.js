@@ -123,9 +123,9 @@ class PathNode {
 
     path() {
         if (this.parent == null)
-            return this.name;
+            return this.fullName;
 
-        return `${this.parent.path()}/${this.name}`
+        return `${this.parent.path()}/${this.fullName}`
     }
 }
 
