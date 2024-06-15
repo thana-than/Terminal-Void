@@ -29,7 +29,7 @@ class Directory {
             if (next == "..") {
                 if (currentNode.parent)
                     nextNode = currentNode.parent;
-                else return currentNode; //* If theres no parent, we're at the root, just return this!
+                //* If theres no parent, we're at the root and we can just keep the currentNode
             }
             //* Test for a child in our current node
             //* Ignore dots or blanks, as that keeps us on the current node
