@@ -45,10 +45,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thana-than/MindCLIGame.git"
+    "url": "git+https://github.com/thana-than/Terminal-Void.git"
   },
   "bugs": {
-    "url": "https://github.com/thana-than/MindCLIGame/issues"
+    "url": "https://github.com/thana-than/Terminal-Void/issues"
   },
-  "homepage": "https://github.com/thana-than/MindCLIGame#readme"
+  "homepage": "https://github.com/thana-than/Terminal-Void#readme"
 }
