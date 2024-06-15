@@ -1,3 +1,5 @@
+import { FileHandle } from './fileHandle.js';
+
 const REGEX_SLASH = /[\\/]/;
 
 class Directory {
@@ -6,11 +8,27 @@ class Directory {
 
     static cd(path) {
         let n = Directory.get(path)
-        if (!n) return `Path '${path}' is not a directory.`;
+        if (!n) return `Directory '${path}' does not exist.`;
         if (n.isFile) return `Path  '${path}' is a file, not a directory.`;
 
-        Directory.current = n;
-        return n.path();
+        return this.cdNode(n);
+    }
+
+    static cdNode(node) {
+        Directory.current = node;
+        return node.path();
+    }
+
+    static run(path) {
+        let node = Directory.get(path)
+        if (!node) return `File '${path}' does not exist.`;
+        if (!node.isFile) return `Path '${path}' is a directory, not a file.`;
+
+        return runNode(node);
+    }
+
+    static runNode(node) {
+        return FileHandle.open(node);
     }
 
     static get(path) {

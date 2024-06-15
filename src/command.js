@@ -45,8 +45,15 @@ function commandFactory(properties) {
 }
 
 function smartCommand(command) {
-    if (Directory.get(command)) //* Start by seeing if we can navigate a directory
-        return Directory.cd(command);
+    let node = Directory.get(command)
+    if (node) //* Start by seeing if we can navigate a directory
+    {
+        if (node.isFile)
+            return Directory.runNode(node); //* Run if file
+        else
+            return Directory.cdNode(node); //* Nav if folder
+    }
+
 
     return null;
 }
@@ -57,6 +64,16 @@ const CD = commandFactory({
         if (params.length != 1)
             return "cd command takes 1 parameter (path)";
         return Directory.cd(params[0])
+    }
+})
+
+const RUN = commandFactory({
+    keys: ['run', 'r', 'open', 'o'],
+    invoke: function (params) {
+        if (params.length != 1)
+            return "run command takes 1 parameter (path)";
+
+        return Directory.run(params[0]);
     }
 })
 
