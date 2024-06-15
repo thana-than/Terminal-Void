@@ -25,11 +25,23 @@ def build_file_structure(directory, isReleaseBuild):
                 shutil.copy(source_path, path_link)
 
             #* Add file to json
-            _name, _ext = os.path.splitext(entry)
+            splitPath = entry.rsplit(os.extsep,1)
+            _name = splitPath[0]
+            _ext = ''
+            if len(splitPath) > 1: _ext = splitPath[1]
+
+            
+            #* If theres another ext separator in the name (ie, text.txt.js), use the "fake" one (txt)
+            splitPath = _name.split(os.extsep, 1);
+            _name = splitPath[0]
+            _gameExt = _ext
+            if len(splitPath) > 1: _gameExt = splitPath[1]
+
             file_structure["children"].append({
                 "pathLink": path_link,
                 "name": _name,
-                "type": _ext
+                "type": _ext,
+                "gameExt": _gameExt
             })
     return file_structure
 
