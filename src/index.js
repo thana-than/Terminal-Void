@@ -1,6 +1,7 @@
 const commandHistory = [];
 let historyIndex = -1;
 let build;
+let commandRunning = false;
 
 import { Directory } from './dir.js';
 import { Command } from './command.js';
@@ -37,15 +38,21 @@ function printCommand(command, response) {
     print(`<div class='command'>> ${command}</div><div class='response'>${response}</div>`);
 }
 
-function sendCommand(command) {
+async function sendCommand(command) {
+    commandRunning = true;
     let response;
     const cleaned_command = command.toLowerCase()
-    response = Command.Run(cleaned_command);
+    response = await Command.Run(cleaned_command);
     printCommand(command, response);
+    commandRunning = false;
 }
 
 document.getElementById('input').addEventListener('keydown', async function (event) {
     const inputElement = event.target;
+    if (commandRunning) {
+        event.preventDefault(); //TODO Send inputs to command instead of just halting input
+        return;
+    }
 
     if (event.key === 'Enter') {
         const command = inputElement.value;
