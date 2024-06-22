@@ -4,3 +4,4 @@ build
 dist
 fileStructure.json
 index.html
+package.json
