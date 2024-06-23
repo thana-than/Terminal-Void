@@ -1,11 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import Terminal from './js/terminal.jsx';
 
 const App = () => (
-    <div>
-        <div id="output"></div>
-        <input type="text" id="input" autofocus></input>
-    </div>
+    <Terminal />
 );
 
 const container = document.getElementById('root');

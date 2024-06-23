@@ -8,7 +8,7 @@
     "dev": "python build_gameFolders.py --dev && webpack --mode=development --watch",
     "build": "python build_gameFolders.py && webpack --mode=production",
     "watch:server": "nodemon --watch gameFolders -e * --exec  python build_gameFolders.py --dev",
-    "watch:browser": "browser-sync start --server 'dist' --files 'dist/*'"
+    "watch:browser": "browser-sync start --server \"dist\" --files \"dist/**/*\""
   },
   "devDependencies": {
     "@babel/core": "^7.24.7",
@@ -19,10 +19,12 @@
     "@semantic-release/release-notes-generator": "^14.0.0",
     "babel-loader": "^9.1.3",
     "browser-sync": "^3.0.2",
+    "css-loader": "^7.1.2",
     "html-webpack-plugin": "^5.6.0",
     "nodemon": "^3.1.3",
     "npm-run-all": "^4.1.5",
     "semantic-release": "^24.0.0",
+    "style-loader": "^4.0.0",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
