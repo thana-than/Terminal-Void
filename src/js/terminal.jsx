@@ -2,7 +2,6 @@ import '../css/terminal.css'
 import React, { useEffect } from 'react';
 import { Directory } from './dir.js';
 import { Command } from './command.js';
-// import './terminal.js';
 
 export default function Terminal() {
     useEffect(() => {
@@ -18,7 +17,6 @@ export default function Terminal() {
 
             //*Get build type
             build = json["build"]
-            console.log("Build " + build);
 
             //* Build file structure
             const dirResponse = Directory.generateFileSystem(json["file_structure"]);
