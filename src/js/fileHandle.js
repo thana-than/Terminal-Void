@@ -1,3 +1,5 @@
+import { gameComponents } from '../.generated/dynamicImports';
+
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
 class FileHandle {

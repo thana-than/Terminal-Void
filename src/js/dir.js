@@ -95,6 +95,7 @@ class Directory {
 class PathNode {
     constructor(jsonNode, parent) {
         this.name = jsonNode["name"];
+        this.hash = jsonNode["hash"];
         this.pathLink = jsonNode["pathLink"]
         this.type = jsonNode["type"]
         this.isFile = this.type != "directory"

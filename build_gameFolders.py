@@ -5,7 +5,8 @@ import sys
 
 def build_file_structure(directory, isReleaseBuild):
     file_structure = {
-        "pathLink": "" if isReleaseBuild else directory,
+        "hash" : "",
+        "pathLink": f'.{directory}', #*Add a dot before so the program know to go back one folder
         "name": os.path.basename(directory),
         "type": "directory",
         "children": []
@@ -16,17 +17,13 @@ def build_file_structure(directory, isReleaseBuild):
 
     for entry in os.listdir(directory):
         source_path = os.path.join(directory, entry)
-        path_link = source_path
+        path_link = f'.{source_path}'
         if os.path.isdir(source_path):
             #* Add directory to json (recursively) ((if it's not empty))
             subDir = build_file_structure(source_path, isReleaseBuild)
             if subDir: file_structure["children"].append(subDir)
         else:
-            if isReleaseBuild: #* If release build, copy the object to the build folder
-                linkName = generate_file_hash_name(source_path, entry) #* Generate a name using a hash of the path so that there are no accidental copies
-                path_link = os.path.join(release_build_folder, linkName)
-                print(f"Creating file link {path_link}")
-                shutil.copy(source_path, os.path.join(outDir, path_link))
+            _hash = generate_file_hash_name(source_path, entry)
 
             #* Add file to json
             splitPath = entry.rsplit(os.extsep,1)
@@ -42,11 +39,15 @@ def build_file_structure(directory, isReleaseBuild):
             if len(splitPath) > 1: _gameExt = splitPath[1]
 
             file_structure["children"].append({
+                "hash": _hash,
                 "pathLink": path_link,
                 "name": _name,
                 "type": _ext,
                 "gameExt": _gameExt
             })
+            
+            importComponents[_hash] = path_link.replace('\\','/')
+
     return file_structure
 
 def generate_file_hash_name(full_path, file_name):
@@ -54,25 +55,36 @@ def generate_file_hash_name(full_path, file_name):
     _file = os.path.basename(_file)
     return f"{_file}_{hash(full_path)}{_ext}"
 
+def generate_dynamic_imports_js():
+    #* Start the content of the dynamicImports.js file
+    content = "export const gameFiles = {\n"
+    
+    #* Add each file to the gameFiles object
+    for component in importComponents:
+        content += f"    '{component}': () => import(/* webpackChunkName: \"components\" */ '{importComponents[component]}'),\n"
+    
+    #* Close the object
+    content += "};\n"
+
+    #* Write the content to the output file
+    with open(os.path.join(outDir ,dynImportJs), 'w') as f:
+        f.write(content)
+
+importComponents = {}
 isDevBuild = len(sys.argv) > 1 and sys.argv[1] in ("--dev", "-d")
 isReleaseBuild = not isDevBuild
 buildTypeName = "RELEASE" if isReleaseBuild else "DEV"
 
+os.chdir('./src/')
 directory_path = './gameFolders'
-outDir = 'dist/'
+outDir = './.generated/'
 
 fileStructureJSON = 'fileStructure.json'
-release_build_folder = 'build/'
+dynImportJs = 'dynamicImports.js'
 print(f"Creating {buildTypeName} build.")
 
 if not os.path.exists(outDir):
     os.mkdir(outDir)
-
-if (isReleaseBuild):
-    releaseOut = os.path.join(outDir, release_build_folder)
-    print(f"Cleaning build folder {releaseOut}")
-    shutil.rmtree(releaseOut, True)
-    os.mkdir(releaseOut)
 
 print(f"Building file structure from folder {directory_path}")
 file_structure = build_file_structure(directory_path, isReleaseBuild)
@@ -87,4 +99,9 @@ print(f"Saving {fileStructureOut}")
 with open(fileStructureOut, 'w') as f:
     json.dump(json_structure, f, indent=2)
 print(f'File structure has been saved to {fileStructureOut}')
+
+print(f"Generating Dynamic js imports")
+generate_dynamic_imports_js()
+print(f"Generation complete! Saved to {dynImportJs}")
+
 print(f"{buildTypeName} build complete!")
