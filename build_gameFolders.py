@@ -24,9 +24,9 @@ def build_file_structure(directory, isReleaseBuild):
         else:
             if isReleaseBuild: #* If release build, copy the object to the build folder
                 linkName = generate_file_hash_name(source_path, entry) #* Generate a name using a hash of the path so that there are no accidental copies
-                path_link = os.path.join(release_build_path, linkName)
+                path_link = os.path.join(release_build_folder, linkName)
                 print(f"Creating file link {path_link}")
-                shutil.copy(source_path, path_link)
+                shutil.copy(source_path, os.path.join(outDir, path_link))
 
             #* Add file to json
             splitPath = entry.rsplit(os.extsep,1)
@@ -60,17 +60,18 @@ buildTypeName = "RELEASE" if isReleaseBuild else "DEV"
 directory_path = './gameFolders'
 outDir = 'dist/'
 
-fileStructureJSON = os.path.join(outDir, 'fileStructure.json')
-release_build_path = os.path.join(outDir, 'build/')
+fileStructureJSON = 'fileStructure.json'
+release_build_folder = 'build/'
 print(f"Creating {buildTypeName} build.")
 
 if not os.path.exists(outDir):
     os.mkdir(outDir)
 
 if (isReleaseBuild):
-    print(f"Cleaning build folder {release_build_path}")
-    shutil.rmtree(release_build_path, True)
-    os.mkdir(release_build_path)
+    releaseOut = os.path.join(outDir, release_build_folder)
+    print(f"Cleaning build folder {releaseOut}")
+    shutil.rmtree(releaseOut, True)
+    os.mkdir(releaseOut)
 
 print(f"Building file structure from folder {directory_path}")
 file_structure = build_file_structure(directory_path, isReleaseBuild)
@@ -80,8 +81,9 @@ json_structure = {
     "file_structure": file_structure 
 }
 
-print(f"Saving {fileStructureJSON}")
-with open(fileStructureJSON, 'w') as f:
+fileStructureOut = os.path.join(outDir, fileStructureJSON)
+print(f"Saving {fileStructureOut}")
+with open(fileStructureOut, 'w') as f:
     json.dump(json_structure, f, indent=2)
-print(f'File structure has been saved to {fileStructureJSON}')
+print(f'File structure has been saved to {fileStructureOut}')
 print(f"{buildTypeName} build complete!")
