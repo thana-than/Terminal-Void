@@ -1,29 +1,12 @@
 import '../css/terminal.css'
 import React, { useEffect } from 'react';
-import { Directory } from './dir.js';
 import { Command } from './command.js';
-import json from '../.generated/fileStructure.json';
 
 export default function Terminal() {
     useEffect(() => {
         const commandHistory = [];
         let historyIndex = -1;
-        let build;
         let commandRunning = false;
-
-        function initialize() {
-            //*Get build type
-            build = json["build"]
-
-            //* Build file structure
-            const dirResponse = Directory.generateFileSystem(json["file_structure"]);
-            log(dirResponse);
-        }
-
-        function log(logText) {
-            if (build != "RELEASE")
-                console.log(logText)
-        }
 
         function print(text) {
             const output = document.getElementById('output');
@@ -78,9 +61,6 @@ export default function Terminal() {
                 event.preventDefault(); // Prevent default behavior of the arrow key
             }
         });
-
-        // Initialize the directory structure when the page loads
-        initialize();
     })
     return (
         <div id="cli" >
