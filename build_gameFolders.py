@@ -60,6 +60,7 @@ def generate_dynamic_imports_js():
     content = "export const gameFiles = {\n"
     
     #* Add each file to the gameFiles object
+    #* Each line adds a dynamic import for webpack to handle. We use webpackChunkName to ensure the files all share the same pack.
     for component in importComponents:
         content += f"    '{component}': () => import(/* webpackChunkName: \"components\" */ '{importComponents[component]}'),\n"
     
