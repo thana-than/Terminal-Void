@@ -2,7 +2,7 @@ import '../css/terminal.css'
 import React, { useEffect } from 'react';
 import { Directory } from './dir.js';
 import { Command } from './command.js';
-// import './terminal.js';
+import json from '../.generated/fileStructure.json';
 
 export default function Terminal() {
     useEffect(() => {
@@ -11,14 +11,9 @@ export default function Terminal() {
         let build;
         let commandRunning = false;
 
-        async function initialize() {
-            //*Load json
-            const response = await fetch('fileStructure.json');
-            const json = await response.json()
-
+        function initialize() {
             //*Get build type
             build = json["build"]
-            console.log("Build " + build);
 
             //* Build file structure
             const dirResponse = Directory.generateFileSystem(json["file_structure"]);

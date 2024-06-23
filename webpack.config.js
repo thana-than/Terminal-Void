@@ -1,14 +1,14 @@
-const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-const config = {
-    entry: [
-        './src/index.js'
-    ],
+module.exports = {
+    entry: './src/index.js',
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'bundle.js'
+        filename: '[name].js',
+        chunkFilename: '[name].js',
+        clean: true
     },
     module: {
         rules: [
@@ -19,10 +19,7 @@ const config = {
             },
             {
                 test: /\.css$/,
-                use: [
-                    'style-loader',
-                    'css-loader'
-                ],
+                use: ['style-loader', 'css-loader'],
                 exclude: /\.module\.css$/
             },
             {
@@ -38,19 +35,50 @@ const config = {
                     }
                 ],
                 include: /\.module\.css$/
+            },
+            {
+                test: /\.(png|jpe?g|gif|svg)$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: '[path][name].[ext]',
+                            context: 'src'
+                        }
+                    }
+                ]
+            },
+            {
+                test: /\.txt$/,
+                use: 'raw-loader'
+            },
+            {
+                test: /\.json$/,
+                type: 'json'
             }
         ]
     },
+    resolve: {
+        extensions: ['.js', '.jsx']
+    },
     devServer: {
-        'static': {
+        static: {
             directory: './dist'
         }
     },
     plugins: [
         new HtmlWebpackPlugin({
             template: './src/index.html',
+        }),
+        new CopyWebpackPlugin({
+            patterns: [
+                { from: 'src/assets', to: 'assets' }
+            ]
         })
-    ]
+    ],
+    optimization: {
+        splitChunks: {
+            chunks: 'all'
+        }
+    }
 };
-
-module.exports = config;

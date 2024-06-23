@@ -1,6 +1,9 @@
 # Node modules directory
 node_modules/
 
+#Generated folders
+.generated/
+
 #Build
 [Bb]build/
 [Bb]uilds/
