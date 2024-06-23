@@ -1,6 +1,7 @@
 import { gameFiles } from '../.generated/dynamicImports';
 import { Program } from './program.js'
 
+//TODO build examiner command that can parse the files for the "examine" tag
 class FileHandle {
     static fileHandles = new Map();
 
@@ -63,16 +64,44 @@ function fileHandleFactory(properties) {
 }
 
 const TextHandle = fileHandleFactory({
-    extensions: ['txt'],
+    extensions: ['txt', 'html'],
     read: function (node, file) {
         return file;
+    },
+})
+
+const HTMLHandle = fileHandleFactory({
+    extensions: ['html'],
+    read: function (node, file) {
+        return file;
+    },
+
+    examine: function (node, file) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(file, 'text/html');
+
+        const metaTag = doc.querySelector('meta[name="examine"]');
+        if (!metaTag) metaTag = doc.querySelector('meta[name="description"]');
+        if (!metaTag) return null;
+
+        return metaTag.getAttribute('content');
     }
 })
 
 const JSHandle = fileHandleFactory({
     extensions: ['js'],
     read: async function (node, file) {
-        return `Reading file ${node.pathLink}.`;
+        if (typeof file.run === "function")
+            return file.run();
+
+        return null;
+    },
+
+    examine: function (node, file) {
+        if (typeof file.examine === "function")
+            return file.examine();
+
+        return null;
     }
 })
 

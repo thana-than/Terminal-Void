@@ -49,7 +49,7 @@ module.exports = {
                 ]
             },
             {
-                test: /\.txt$/,
+                test: /\.(html|txt)$/,
                 use: 'raw-loader'
             },
             {
