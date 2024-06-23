@@ -51,6 +51,7 @@ def build_file_structure(directory, isReleaseBuild):
 
 def generate_file_hash_name(full_path, file_name):
     _file, _ext = os.path.splitext(file_name)
+    _file = os.path.basename(_file)
     return f"{_file}_{hash(full_path)}{_ext}"
 
 isDevBuild = len(sys.argv) > 1 and sys.argv[1] in ("--dev", "-d")
