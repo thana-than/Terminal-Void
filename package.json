@@ -4,9 +4,10 @@
   "main": "index.html",
   "private": true,
   "scripts": {
-    "start": "npm-run-all --parallel dev watch:server watch:browser",
-    "dev": "python build_gameFolders.py --dev && webpack --mode=development --watch",
+    "start": "python build_gameFolders.py --dev && npm-run-all --parallel watch:webpack watch:server watch:browser",
+    "dev": "python build_gameFolders.py --dev && webpack --mode=development",
     "build": "python build_gameFolders.py && webpack --mode=production",
+    "watch:webpack": "webpack --mode=development --watch",
     "watch:server": "nodemon --watch gameFolders -e * --exec  python build_gameFolders.py --dev",
     "watch:browser": "browser-sync start --server \"dist\" --files \"dist/**/*\""
   },
