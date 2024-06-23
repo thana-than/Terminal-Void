@@ -38,7 +38,8 @@ jobs:
 
     - name: Create zip file
       run: |
-        zip -r release.zip -@ < release_build_files.txt
+        cd dist
+        zip -r ../release.zip .
       shell: bash
 
     - name: Run semantic-release

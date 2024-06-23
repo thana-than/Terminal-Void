@@ -1,4 +1,6 @@
-const REGEX_SLASH = /[\\/]/; // Assuming this is defined somewhere
+import { FileHandle } from './fileHandle.js';
+
+const REGEX_SLASH = /[\\/]/;
 
 class Directory {
     static root;
@@ -6,10 +8,27 @@ class Directory {
 
     static cd(path) {
         let n = Directory.get(path)
-        if (!n) return `Path '${path}' is not a directory.`;
+        if (!n) return `Directory '${path}' does not exist.`;
+        if (n.isFile) return `Path  '${path}' is a file, not a directory.`;
 
-        Directory.current = n;
-        return n.path();
+        return this.cdNode(n);
+    }
+
+    static cdNode(node) {
+        Directory.current = node;
+        return node.path();
+    }
+
+    static run(path) {
+        let node = Directory.get(path)
+        if (!node) return `File '${path}' does not exist.`;
+        if (!node.isFile) return `Path '${path}' is a directory, not a file.`;
+
+        return runNode(node);
+    }
+
+    static runNode(node) {
+        return FileHandle.open(node);
     }
 
     static get(path) {
@@ -29,16 +48,20 @@ class Directory {
             if (next == "..") {
                 if (currentNode.parent)
                     nextNode = currentNode.parent;
-                else return currentNode; //* If theres no parent, we're at the root, just return this!
+                //* If theres no parent, we're at the root and we can just keep the currentNode
             }
             //* Test for a child in our current node
             //* Ignore dots or blanks, as that keeps us on the current node
             else if (next != "." && next != '') {
-                nextNode = currentNode.children.get(next);
+                nextNode = currentNode.getChild(next);
             }
 
             //* If at any point we lose our node (or the node is a file), that means the path is invalid
-            if (!nextNode || nextNode.isFile)
+            if (!nextNode)
+                return null;
+
+            //* This check confirms that a file isn't used mid-path. Files are only allowed to be at the end of the path
+            if (nextNode != currentNode && currentNode.isFile)
                 return null;
 
             currentNode = nextNode
@@ -76,15 +99,33 @@ class PathNode {
         this.type = jsonNode["type"]
         this.isFile = this.type != "directory"
         this.parent = parent
-        if (!this.isFile)
-            this.children = new Map();
+        this.gameExt = jsonNode["gameExt"]
+        this.fullName = this.name;
+        if (this.isFile) { this.fullName += `\.${this.gameExt}`; }
+        else { this.children = new Map(); }
+    }
+
+    getChild(node) {
+        if (!this.children)
+            return false;
+
+        const arr = node.split(/\.(.*)/)
+        const _name = arr[0]
+        const _ext = arr[1]
+
+        const child = this.children.get(_name);
+        if (!child) { return null; }
+
+        if (_ext && _ext != "" && _ext != child.gameExt) { return null; }
+
+        return child;
     }
 
     path() {
         if (this.parent == null)
-            return this.name;
+            return this.fullName;
 
-        return `${this.parent.path()}/${this.name}`
+        return `${this.parent.path()}/${this.fullName}`
     }
 }
 

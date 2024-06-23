@@ -4,22 +4,30 @@
   "main": "index.html",
   "private": true,
   "scripts": {
-    "start": "npm-run-all --parallel watch:server watch:browser dev",
+    "start": "npm-run-all --parallel dev watch:server watch:browser",
     "dev": "python build_gameFolders.py --dev && webpack --mode=development --watch",
     "build": "python build_gameFolders.py && webpack --mode=production",
     "watch:server": "nodemon --watch gameFolders -e * --exec  python build_gameFolders.py --dev",
-    "watch:browser": "browser-sync start --server --files \"dist/*, *.json, *.html, *.css, *.js\""
+    "watch:browser": "browser-sync start --server \"dist\" --files \"dist/**/*\""
   },
   "devDependencies": {
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
+    "@babel/preset-react": "^7.24.7",
     "@semantic-release/github": "^10.0.6",
     "@semantic-release/npm": "^12.0.1",
     "@semantic-release/release-notes-generator": "^14.0.0",
+    "babel-loader": "^9.1.3",
     "browser-sync": "^3.0.2",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.0",
     "nodemon": "^3.1.3",
     "npm-run-all": "^4.1.5",
     "semantic-release": "^24.0.0",
-    "webpack": "^5.92.0",
-    "webpack-cli": "^5.1.4"
+    "style-loader": "^4.0.0",
+    "webpack": "^5.92.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4"
   },
   "release": {
     "branches": [
@@ -45,10 +53,14 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thana-than/MindCLIGame.git"
+    "url": "git+https://github.com/thana-than/Terminal-Void.git"
   },
   "bugs": {
-    "url": "https://github.com/thana-than/MindCLIGame/issues"
+    "url": "https://github.com/thana-than/Terminal-Void/issues"
   },
-  "homepage": "https://github.com/thana-than/MindCLIGame#readme"
+  "homepage": "https://github.com/thana-than/Terminal-Void#readme",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
 }
