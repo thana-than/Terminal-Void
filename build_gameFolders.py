@@ -56,11 +56,16 @@ def generate_file_hash_name(full_path, file_name):
 isDevBuild = len(sys.argv) > 1 and sys.argv[1] in ("--dev", "-d")
 isReleaseBuild = not isDevBuild
 buildTypeName = "RELEASE" if isReleaseBuild else "DEV"
-fileStructureJSON = 'dist/fileStructure.json'
-print(f"Creating {buildTypeName} build.")
 
 directory_path = './gameFolders'
-release_build_path = './dist/build'
+outDir = 'dist/'
+
+fileStructureJSON = os.path.join(outDir, 'fileStructure.json')
+release_build_path = os.path.join(outDir, 'build/')
+print(f"Creating {buildTypeName} build.")
+
+if not os.path.exists(outDir):
+    os.mkdir(outDir)
 
 if (isReleaseBuild):
     print(f"Cleaning build folder {release_build_path}")
