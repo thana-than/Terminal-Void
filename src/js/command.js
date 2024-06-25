@@ -87,7 +87,7 @@ const LIST = commandFactory({
         params.forEach(path => {
             const n = Directory.get(path);
             if (n)
-                contents.push(...ls(n))
+                contents.push(...ls(n));
             else
                 contents.push(`Path '${path}' is not a directory.`);
         });
@@ -95,13 +95,14 @@ const LIST = commandFactory({
         return str(contents);
 
         function str(contents) {
-            return contents.join('<br>');
+            return contents.map(name => `-${name} `);
         }
 
         function ls(node) {
             return Array.from(node.children.values(), (n) => n.fullName);
         }
     }
-})
+});
+
 
 export { Command };

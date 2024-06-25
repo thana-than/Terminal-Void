@@ -1,25 +1,25 @@
 import '../css/terminal.css'
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Command } from './command.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function Terminal() {
+    const [blocks, setBlocks] = useState([]);
     useEffect(() => {
         const commandHistory = [];
         let historyIndex = -1;
         let commandRunning = false;
 
-        function print(text) {
-            const output = document.getElementById('output');
-            const div = document.createElement('div');
-            div.classList.add('content');
-            div.innerHTML = text;
-            output.appendChild(div);
-            output.scrollTop = output.scrollHeight;
-        }
-
-
         function printCommand(command, response) {
-            print(`<div class='command'>> ${command}</div><div class='response'>${response}</div>`);
+            const commandId = uuidv4();
+            const responseId = uuidv4();
+
+            setBlocks(prevBlocks => {
+                return [...prevBlocks,
+                { key: commandId, type: 'command', content: `> ${command}` },
+                { key: responseId, type: 'response', content: response }
+                ]
+            });
         }
 
         async function sendCommand(command) {
@@ -31,10 +31,11 @@ export default function Terminal() {
             commandRunning = false;
         }
 
-        document.getElementById('input').addEventListener('keydown', async function (event) {
-            const inputElement = event.target;
+        const inputElement = document.getElementById('input');
+
+        function handleKeyDown(event) {
             if (commandRunning) {
-                event.preventDefault(); //TODO Send inputs to command instead of just halting input
+                event.preventDefault();
                 return;
             }
 
@@ -49,7 +50,7 @@ export default function Terminal() {
                     historyIndex -= 1;
                     inputElement.value = commandHistory[historyIndex];
                 }
-                event.preventDefault(); // Prevent default behavior of the arrow key
+                event.preventDefault();
             } else if (event.key === 'ArrowDown') {
                 if (historyIndex < commandHistory.length - 1) {
                     historyIndex += 1;
@@ -58,13 +59,26 @@ export default function Terminal() {
                     historyIndex = commandHistory.length;
                     inputElement.value = '';
                 }
-                event.preventDefault(); // Prevent default behavior of the arrow key
+                event.preventDefault();
             }
-        });
-    })
+        }
+
+        inputElement.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            inputElement.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
+
     return (
         <div id="cli" >
-            <div id="output"></div>
+            <div id="output">
+                {blocks.map(block => (
+                    <React.Fragment key={block.key}>
+                        <div className={block.type}>{block.content}</div>
+                    </React.Fragment>
+                ))}
+            </div>
             <input type="text" id="input" autofocus></input>
         </div >
     );
