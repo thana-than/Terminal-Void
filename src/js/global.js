@@ -2,7 +2,7 @@
 import json from '../.generated/fileStructure.json';
 import { Directory } from './dir.js';
 
-class Program {
+class Global {
     static build
 
     static initialize() {
@@ -20,4 +20,4 @@ class Program {
     }
 }
 
-export { Program }
+export { Global }

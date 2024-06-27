@@ -1,22 +1,22 @@
 import { gameFiles } from '../.generated/dynamicImports';
-import { Program } from './program.js'
+import { Global } from './global.js'
 
 //TODO build examiner command that can parse the files for the "examine" tag
 class FileHandle {
     static fileHandles = new Map();
 
-    static async open(node) {
+    static open(node) {
         const handle = this.fileHandles.get(node.type)
         if (!handle) {
-            Program.log(`File '${node.pathLink}' is not a recognized type.`)
+            Global.log(`File '${node.pathLink}' is not a recognized type.`)
             return `File '${node.fullName}' is not a recognized type.`;
         }
 
-        Program.log(`Opening ${node.fullName} at ${node.pathLink}`);
+        Global.log(`Opening ${node.fullName} at ${node.pathLink}`);
 
-        const file = await load(node.hash);
+        const file = load(node.hash);
         if (file) {
-            Program.log(`Reading file at path ${node.pathLink}.`)
+            Global.log(`Reading file at path ${node.pathLink}.`)
             return handle.read(node, file);
         }
 

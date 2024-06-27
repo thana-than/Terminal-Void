@@ -1,12 +1,12 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import Terminal from './js/terminal.jsx';
-import { Program } from './js/program.js';
+import OS from './js/OS.jsx';
+import { Global } from './js/global.js';
 
-Program.initialize();
+Global.initialize();
 
 const App = () => (
-    <Terminal />
+    <OS />
 );
 
 const container = document.getElementById('root');
