@@ -46,7 +46,7 @@ export default function OS() {
 
     function Initialize() {
         baseTerminalRef.current = new Terminal();
-        focusProgram(new Terminal());
+        focusProgram(baseTerminalRef.current);
         initialized = true;
     }
 
