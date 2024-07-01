@@ -24,7 +24,6 @@ export default function OS() {
 
             //* If a program has an update function, run it!
             if (typeof programRef.current.update === "function") {
-                // safe to use the function
                 programRef.current.update(deltaTime);
             }
         }
@@ -55,14 +54,14 @@ export default function OS() {
             Initialize();
         }
 
-        // Define the keydown event handler
+        //* Define the keydown event handler
         const handleKeyDown = (event) => {
             if (programRef.current) {
                 programRef.current.onKeyDown(event);
             }
         };
 
-        // Add the event listener
+        //* Add the event listener
         window.addEventListener('keydown', handleKeyDown);
 
         updateRef.current = requestAnimationFrame(updateLoop);
