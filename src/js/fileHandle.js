@@ -1,11 +1,12 @@
 import { gameFiles } from '../.generated/dynamicImports';
 import { Global } from './global.js'
+import React from 'react';
 
 //TODO build examiner command that can parse the files for the "examine" tag
 class FileHandle {
     static fileHandles = new Map();
 
-    static open(node) {
+    static async open(node) {
         const handle = this.fileHandles.get(node.type)
         if (!handle) {
             Global.log(`File '${node.pathLink}' is not a recognized type.`)
@@ -14,7 +15,7 @@ class FileHandle {
 
         Global.log(`Opening ${node.fullName} at ${node.pathLink}`);
 
-        const file = load(node.hash);
+        const file = await load(node.hash);
         if (file) {
             Global.log(`Reading file at path ${node.pathLink}.`)
             return handle.read(node, file);
@@ -31,7 +32,7 @@ class FileHandle {
     }
 }
 
-function load(hash) {
+async function load(hash) {
     const importComponent = gameFiles[hash];
 
     if (importComponent) {
@@ -68,19 +69,26 @@ const TextHandle = fileHandleFactory({
     read: function (node, file) {
         return file;
     },
+
+    examine: function (node, file) {
+        return "A file."; //TODO swap this out with default examine when possible 
+    },
 })
 
 const HTMLHandle = fileHandleFactory({
     extensions: ['html'],
     read: function (node, file) {
-        return file;
+        const markup = { __html: file };
+        return (
+            <div dangerouslySetInnerHTML={markup}></div>
+        );
     },
 
     examine: function (node, file) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(file, 'text/html');
 
-        const metaTag = doc.querySelector('meta[name="examine"]');
+        let metaTag = doc.querySelector('meta[name="examine"]');
         if (!metaTag) metaTag = doc.querySelector('meta[name="description"]');
         if (!metaTag) return null;
 
@@ -100,6 +108,32 @@ const JSHandle = fileHandleFactory({
     examine: function (node, file) {
         if (typeof file.examine === "function")
             return file.examine();
+
+        return null;
+    }
+})
+
+const JSXHandle = fileHandleFactory({
+    extensions: ['jsx'],
+    read: async function (node, file) {
+        try {
+            const Component = file;
+            return <Component />;
+        } catch (error) {
+            console.error(`Error loading JSX component for node ${node}:`, error);
+            throw error;
+        }
+    },
+
+    examine: function (node, file) {
+        const tags = file().props.children;
+        if (!tags)
+            return null;
+
+        //* Search the react tags to find a meta element with either the examine or description tag
+        const match = tags.find((element) => element.type == 'meta' && (element.props.name == 'examine' || element.props.name == 'description'));
+        if (match)
+            return match.props.content;
 
         return null;
     }
