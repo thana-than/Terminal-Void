@@ -6,6 +6,7 @@ import Program from "./program";
 export default class CLI extends Program {
     commandHistory = [];
     historyIndex = -1;
+    commandHistory_maxSize = 50;
     blocks = [];
     commandRunning = false;
     startMessage = <p>Welcome!<br></br></p>;
@@ -92,6 +93,11 @@ export default class CLI extends Program {
 
             if (this.commandHistory[this.commandHistory.length - 1] != command)
                 this.commandHistory.push(command);
+
+            //* If we are using a max size for our command history, enforce it by removing the first element of the history (if over max)
+            if (this.commandHistory_maxSize > 0 && this.commandHistory.length > this.commandHistory_maxSize)
+                this.commandHistory.shift();
+
             this.historyIndex = this.commandHistory.length;
 
             this.sendCommand(command);
