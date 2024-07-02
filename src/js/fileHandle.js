@@ -3,6 +3,7 @@ import { Global } from './global.js'
 import Program from "./program";
 import React from 'react';
 import { runProgram } from './OS.jsx';
+import DOMPurify from 'dompurify';
 
 //TODO build examiner command that can parse the files for the "examine" tag
 class FileHandle {
@@ -80,7 +81,8 @@ const TextHandle = fileHandleFactory({
 const HTMLHandle = fileHandleFactory({
     extensions: ['html'],
     read: function (node, file) {
-        const markup = { __html: file };
+        const sanitizedHtml = DOMPurify.sanitize(file);
+        const markup = { __html: sanitizedHtml };
         return (
             <div dangerouslySetInnerHTML={markup}></div>
         );
