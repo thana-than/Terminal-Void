@@ -1,91 +1,79 @@
-import '../css/terminal.css'
-import React, { useEffect } from 'react';
+import '../css/os.css'
+import Interpreter from './command.js';
+import CLI from "./cliProgram";
 import { Directory } from './dir.js';
-import { Command } from './command.js';
-import json from '../.generated/fileStructure.json';
 
-export default function Terminal() {
-    useEffect(() => {
-        const commandHistory = [];
-        let historyIndex = -1;
-        let build;
-        let commandRunning = false;
+const CD = {
+    keys: ['cd', 'goto'],
+    invoke: function (params) {
+        if (params.length != 1)
+            return "cd command takes 1 parameter (path)";
+        return Directory.cd(params[0])
+    }
+}
 
-        function initialize() {
-            //*Get build type
-            build = json["build"]
+const RUN = {
+    keys: ['run', 'r', 'open', 'o'],
+    invoke: function (params) {
+        if (params.length != 1)
+            return "run command takes 1 parameter (path)";
 
-            //* Build file structure
-            const dirResponse = Directory.generateFileSystem(json["file_structure"]);
-            log(dirResponse);
-        }
+        return Directory.run(params[0]);
+    }
+}
 
-        function log(logText) {
-            if (build != "RELEASE")
-                console.log(logText)
-        }
+const LIST = {
+    keys: ['ls', 'list'],
+    invoke: function (params) {
+        if (params.length == 0)
+            return str(ls(Directory.current));
 
-        function print(text) {
-            const output = document.getElementById('output');
-            const div = document.createElement('div');
-            div.classList.add('content');
-            div.innerHTML = text;
-            output.appendChild(div);
-            output.scrollTop = output.scrollHeight;
-        }
-
-
-        function printCommand(command, response) {
-            print(`<div class='command'>> ${command}</div><div class='response'>${response}</div>`);
-        }
-
-        async function sendCommand(command) {
-            commandRunning = true;
-            let response;
-            const cleaned_command = command.toLowerCase()
-            response = await Command.Run(cleaned_command);
-            printCommand(command, response);
-            commandRunning = false;
-        }
-
-        document.getElementById('input').addEventListener('keydown', async function (event) {
-            const inputElement = event.target;
-            if (commandRunning) {
-                event.preventDefault(); //TODO Send inputs to command instead of just halting input
-                return;
-            }
-
-            if (event.key === 'Enter') {
-                const command = inputElement.value;
-                inputElement.value = '';
-                commandHistory.push(command);
-                historyIndex = commandHistory.length;
-                sendCommand(command);
-            } else if (event.key === 'ArrowUp') {
-                if (historyIndex > 0) {
-                    historyIndex -= 1;
-                    inputElement.value = commandHistory[historyIndex];
-                }
-                event.preventDefault(); // Prevent default behavior of the arrow key
-            } else if (event.key === 'ArrowDown') {
-                if (historyIndex < commandHistory.length - 1) {
-                    historyIndex += 1;
-                    inputElement.value = commandHistory[historyIndex];
-                } else {
-                    historyIndex = commandHistory.length;
-                    inputElement.value = '';
-                }
-                event.preventDefault(); // Prevent default behavior of the arrow key
-            }
+        let contents = [];
+        params.forEach(path => {
+            const n = Directory.get(path);
+            if (n)
+                contents.push(...ls(n));
+            else
+                contents.push(`Path '${path}' is not a directory.`);
         });
 
-        // Initialize the directory structure when the page loads
-        initialize();
-    })
-    return (
-        <div id="cli" >
-            <div id="output"></div>
-            <input type="text" id="input" autofocus></input>
-        </div >
-    );
+        return str(contents);
+
+        function str(contents) {
+            return contents.map(name => `-${name} `);
+        }
+
+        function ls(node) {
+            return Array.from(node.children.values(), (n) => n.fullName);
+        }
+    }
+};
+
+const CLEAR = {
+    keys: ['cls', 'clear'],
+    allowCommandDisplay: false,
+    invoke: function (params, context) {
+        context.cli.clear();
+    }
+};
+
+function smartCommand(command, context) {
+    let node = Directory.get(command)
+    if (node) //* Start by seeing if we can navigate a directory
+    {
+        if (node.isFile)
+            return Directory.runNode(node); //* Run if file
+        else
+            return Directory.cdNode(node); //* Nav if folder
+    }
+
+    return null;
 }
+
+const interpreter = new Interpreter(
+    [CD, RUN, LIST, CLEAR],
+    smartCommand
+);
+
+const Terminal = new CLI(interpreter);
+export default Terminal;
