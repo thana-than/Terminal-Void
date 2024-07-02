@@ -1,6 +1,6 @@
 import { gameFiles } from '../.generated/dynamicImports';
 import { Global } from './global.js'
-import { Program } from "./program";
+import Program from "./program";
 import React from 'react';
 import { runProgram } from './OS.jsx';
 
@@ -118,9 +118,18 @@ const JSHandle = fileHandleFactory({
 const JSXHandle = fileHandleFactory({
     extensions: ['jsx'],
     read: async function (node, file) {
-        if (file.prototype instanceof Program) {
-            const program = new file();
+        const fileType = file.prototype || file;
+        if (fileType instanceof Program) {
+            const program = file.prototype ? new file() : file; //*Either creates a new instance if this is a type, or just grabs the existing instance
             runProgram(program);
+
+            while (program.isRunning()) {
+                await new Promise(resolve => setTimeout(resolve, 100)); //*Wait 100 ms in loop while waiting for program to stop
+            }
+
+            if (program.postMessage)
+                return program.postMessage;
+
             return `Finished running ${node.fullName}`;
         }
 

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal } from "./terminal";
+import Terminal from "./terminal";
 import '../css/os.css'
 
 let initialized = false;
-let baseTerminalRef;
-let programRef;
+let baseTerminal;
+let runningProgram;
 let updateOutput;
-let updateRef;
-let previousTimeRef;
+let update;
+let previousTime;
 
 //* Setup update callback
 const refreshCallback = (newOutput) => {
@@ -15,17 +15,17 @@ const refreshCallback = (newOutput) => {
 };
 
 const updateLoop = (time) => {
-    if (previousTimeRef !== undefined) {
-        const deltaTime = time - previousTimeRef;
+    if (previousTime !== undefined) {
+        const deltaTime = time - previousTime;
 
         //* If a program has an update function, run it!
-        if (typeof programRef.update === "function") {
-            programRef.update(deltaTime);
+        if (typeof runningProgram.update === "function") {
+            runningProgram.update(deltaTime);
         }
     }
 
-    previousTimeRef = time;
-    updateRef = requestAnimationFrame(updateLoop);
+    previousTime = time;
+    update = requestAnimationFrame(updateLoop);
 };
 
 export function closeProgram() {
@@ -33,50 +33,50 @@ export function closeProgram() {
 }
 
 export function runProgram(program) {
-    if (programRef) {
-        programRef.refreshCallback = null;
-        programRef.closeCallback = null;
+    if (runningProgram) {
+        runningProgram.refreshCallback = null;
+        runningProgram.closeCallback = null;
     }
 
-
     if (program == null)
-        program = baseTerminalRef;
+        program = baseTerminal;
 
-    programRef = program;
-    programRef.refreshCallback = refreshCallback;
-    programRef.closeCallback = closeProgram;
+    runningProgram = program;
+    runningProgram.refreshCallback = refreshCallback;
+    runningProgram.closeCallback = closeProgram;
+    runningProgram.run();
 
     //* Initialize the programs's initial output
-    updateOutput(programRef.draw());
+    updateOutput(runningProgram.draw());
 }
 
 export default function OS() {
     const [output, setOutput] = useState('');
 
     function Initialize() {
-        baseTerminalRef = new Terminal();
+        baseTerminal = Terminal;
         updateOutput = (newOut) => { setOutput(newOut); }
-        runProgram(baseTerminalRef);
+        runProgram(baseTerminal);
         initialized = true;
     }
 
     useEffect(() => {
         //* Define the keydown event handler
         const handleKeyDown = (event) => {
-            if (programRef) {
-                programRef.onKeyDown(event);
+            if (runningProgram) {
+                runningProgram.onKeyDown(event);
             }
         };
 
         //* Add the event listener
         window.addEventListener('keydown', handleKeyDown);
 
-        updateRef = requestAnimationFrame(updateLoop);
+        update = requestAnimationFrame(updateLoop);
 
         //* Cleanup
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
-            cancelAnimationFrame(programRef);
+            cancelAnimationFrame(runningProgram);
         };
     }, []);
 

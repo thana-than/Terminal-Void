@@ -1,22 +1,48 @@
 import '../css/os.css'
 import React from 'react';
-import { Command } from './command.js';
 import { v4 as uuidv4 } from 'uuid';
-import { Program } from "./program";
+import Program from "./program";
 
-class CLI extends Program {
+export default class CLI extends Program {
     static commandHistory = [];
     static historyIndex = -1;
     blocks = [];
     commandRunning = false;
+    startMessage = <p>Welcome!<br></br></p>;
+    pressToCloseMessage = <p>Press any key to continue.</p>
+    initialized = false;
 
+    ready_pressToClose = false;
+    queue_pressToClose = false;
+
+    constructor(interpreter) {
+        super();
+        this.interpreter = interpreter;
+    }
+
+    initialize() {
+        this.blocks.push({ key: uuidv4(), type: 'response', content: this.startMessage })
+        this.initialized = true;
+    }
+
+    pressToClose(refreshImmediate = false) {
+        this.queue_pressToClose = true;
+        if (refreshImmediate)
+            this.refresh();
+    }
+
+    clear() {
+        this.blocks.length = 0;
+    }
 
     printCommand(command, response) {
         const commandId = uuidv4();
         const responseId = uuidv4();
 
-        this.blocks.push({ key: commandId, type: 'command', content: `> ${command}` },
-            { key: responseId, type: 'response', content: response });
+        if (command)
+            this.blocks.push({ key: commandId, type: 'command', content: `> ${command}` });
+
+        this.blocks.push({ key: responseId, type: 'response', content: response });
 
         //TODO this only kind of works and only if the command doesn't have an await.
         //TODO find a way to ensure the update only occurs once it's ready
@@ -29,7 +55,18 @@ class CLI extends Program {
         this.commandRunning = true;
         const cleaned_command = command.toLowerCase()
 
-        const response = await Command.Run(cleaned_command);
+        const context = {
+            cli: this
+        }
+
+        const interpret = typeof this.interpreter.Run === 'function' ? this.interpreter.Run : this.interpreter;
+        const response = await interpret.call(this.interpreter, cleaned_command, context);
+
+        if (typeof this.interpreter.AllowCommandDisplay === 'function') {
+            if (!this.interpreter.AllowCommandDisplay(cleaned_command))
+                command = null;
+        }
+
         this.printCommand(command, response);
 
         this.commandRunning = false;
@@ -40,6 +77,11 @@ class CLI extends Program {
         if (this.commandRunning) {
             event.preventDefault();
             return;
+        }
+
+        if (this.ready_pressToClose) {
+            this.ready_pressToClose = false;
+            this.close();
         }
 
         const inputElement = document.getElementById('input');
@@ -74,6 +116,15 @@ class CLI extends Program {
     }
 
     draw() {
+        if (!this.initialized)
+            this.initialize();
+
+        if (this.queue_pressToClose) {
+            this.queue_pressToClose = false;
+            this.ready_pressToClose = true;
+            this.blocks.push({ key: uuidv4(), type: 'response', content: this.pressToCloseMessage })
+        }
+
         return (
             <div className="cli">
                 <div id="output">
@@ -88,5 +139,3 @@ class CLI extends Program {
         );
     }
 }
-
-export { CLI };

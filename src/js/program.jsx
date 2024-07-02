@@ -1,10 +1,10 @@
 import React from 'react';
 
-class Program {
+export default class Program {
     refreshCallback = null;
     closeCallback = null;
 
-    onKeyDown() { }
+    onKeyDown() { this.close(); }
     onKeyUp() { }
 
     refresh() {
@@ -17,11 +17,17 @@ class Program {
             this.closeCallback();
     }
 
+    run() {
+
+    }
+
+    isRunning() {
+        return this.closeCallback != null;
+    }
+
     draw() {
         return (
             <div style={{ border: '2px solid red', width: '100%', height: '100%' }}>Program Block</div>
         );
     }
 }
-
-export { Program };

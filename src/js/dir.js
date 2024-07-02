@@ -24,7 +24,7 @@ class Directory {
         if (!node) return `File '${path}' does not exist.`;
         if (!node.isFile) return `Path '${path}' is a directory, not a file.`;
 
-        return runNode(node);
+        return Directory.runNode(node);
     }
 
     static runNode(node) {
