@@ -8,7 +8,14 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js',
         chunkFilename: '[name].js',
+        publicPath: '/',
         clean: true
+    },
+    resolve: {
+        alias: {
+            'assets': path.resolve(__dirname, 'src/assets/')
+        },
+        extensions: ['.js', '.jsx']
     },
     module: {
         rules: [
@@ -37,20 +44,33 @@ module.exports = {
                 include: /\.module\.css$/
             },
             {
-                test: /\.(png|jpe?g|gif|svg)$/,
+                test: /\.(png|jpe?g|gif|svg)$/i,
                 use: [
                     {
                         loader: 'file-loader',
                         options: {
-                            name: '[path][name].[ext]',
-                            context: 'src'
+                            name: '[name].[ext]',
+                            context: 'src',
                         }
                     }
                 ]
             },
             {
-                test: /\.(html|txt)$/,
+                test: /\.txt$/,
                 use: 'raw-loader'
+            },
+            {
+                test: /\.html$/,
+                use: [
+                    {
+                        loader: 'vue-html-loader',
+                        options: {
+                            transformAssetUrls: {
+                                img: 'src'
+                            }
+                        }
+                    }
+                ]
             },
             {
                 test: /\.json$/,
@@ -58,13 +78,12 @@ module.exports = {
             }
         ]
     },
-    resolve: {
-        extensions: ['.js', '.jsx']
-    },
     devServer: {
         static: {
-            directory: './dist'
-        }
+            directory: path.join(__dirname, 'dist')
+        },
+        compress: true,
+        port: 9000,
     },
     plugins: [
         new HtmlWebpackPlugin({

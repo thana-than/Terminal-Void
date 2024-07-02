@@ -29,6 +29,7 @@
     "raw-loader": "^4.0.2",
     "semantic-release": "^24.0.0",
     "style-loader": "^4.0.0",
+    "vue-html-loader": "^1.2.4",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
@@ -64,8 +65,10 @@
   },
   "homepage": "https://github.com/thana-than/Terminal-Void#readme",
   "dependencies": {
+    "dompurify": "^3.1.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "save-dev": "^0.0.1-security",
     "uuid": "^10.0.0"
   }
 }
