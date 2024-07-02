@@ -4,8 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import Program from "./program";
 
 export default class CLI extends Program {
-    static commandHistory = [];
-    static historyIndex = -1;
+    commandHistory = [];
+    historyIndex = -1;
     blocks = [];
     commandRunning = false;
     startMessage = <p>Welcome!<br></br></p>;
@@ -89,21 +89,24 @@ export default class CLI extends Program {
         if (event.key === 'Enter') {
             const command = inputElement.value;
             inputElement.value = '';
-            CLI.commandHistory.push(command);
-            CLI.historyIndex = CLI.commandHistory.length;
+
+            if (this.commandHistory[this.commandHistory.length - 1] != command)
+                this.commandHistory.push(command);
+            this.historyIndex = this.commandHistory.length;
+
             this.sendCommand(command);
         } else if (event.key === 'ArrowUp') {
-            if (CLI.historyIndex > 0) {
-                CLI.historyIndex -= 1;
-                inputElement.value = CLI.commandHistory[CLI.historyIndex];
+            if (this.historyIndex > 0) {
+                this.historyIndex -= 1;
+                inputElement.value = this.commandHistory[this.historyIndex];
             }
             event.preventDefault();
         } else if (event.key === 'ArrowDown') {
-            if (CLI.historyIndex < CLI.commandHistory.length - 1) {
-                CLI.historyIndex += 1;
-                inputElement.value = CLI.commandHistory[CLI.historyIndex];
+            if (this.historyIndex < this.commandHistory.length - 1) {
+                this.historyIndex += 1;
+                inputElement.value = this.commandHistory[this.historyIndex];
             } else {
-                CLI.historyIndex = CLI.commandHistory.length;
+                this.historyIndex = this.commandHistory.length;
                 inputElement.value = '';
             }
             event.preventDefault();
