@@ -1,6 +1,8 @@
 import { gameFiles } from '../.generated/dynamicImports';
 import { Global } from './global.js'
+import { Program } from "./program";
 import React from 'react';
+import { runProgram } from './OS.jsx';
 
 //TODO build examiner command that can parse the files for the "examine" tag
 class FileHandle {
@@ -116,6 +118,12 @@ const JSHandle = fileHandleFactory({
 const JSXHandle = fileHandleFactory({
     extensions: ['jsx'],
     read: async function (node, file) {
+        if (file.prototype instanceof Program) {
+            const program = new file();
+            runProgram(program);
+            return `Finished running ${node.fullName}`;
+        }
+
         try {
             const Component = file;
             return <Component />;

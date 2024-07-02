@@ -2,6 +2,7 @@ import React from 'react';
 
 class Program {
     refreshCallback = null;
+    closeCallback = null;
 
     onKeyDown() { }
     onKeyUp() { }
@@ -9,6 +10,11 @@ class Program {
     refresh() {
         if (this.refreshCallback)
             this.refreshCallback(this.draw());
+    }
+
+    close() {
+        if (this.closeCallback)
+            this.closeCallback();
     }
 
     draw() {

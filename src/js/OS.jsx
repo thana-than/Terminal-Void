@@ -1,77 +1,87 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Terminal } from "./terminal";
-import { Program } from "./program";
 import '../css/os.css'
 
 let initialized = false;
+let baseTerminalRef;
+let programRef;
+let updateOutput;
+let updateRef;
+let previousTimeRef;
+
+//* Setup update callback
+const refreshCallback = (newOutput) => {
+    updateOutput(newOutput);
+};
+
+const updateLoop = (time) => {
+    if (previousTimeRef !== undefined) {
+        const deltaTime = time - previousTimeRef;
+
+        //* If a program has an update function, run it!
+        if (typeof programRef.update === "function") {
+            programRef.update(deltaTime);
+        }
+    }
+
+    previousTimeRef = time;
+    updateRef = requestAnimationFrame(updateLoop);
+};
+
+export function closeProgram() {
+    runProgram(null);
+}
+
+export function runProgram(program) {
+    if (programRef) {
+        programRef.refreshCallback = null;
+        programRef.closeCallback = null;
+    }
+
+
+    if (program == null)
+        program = baseTerminalRef;
+
+    programRef = program;
+    programRef.refreshCallback = refreshCallback;
+    programRef.closeCallback = closeProgram;
+
+    //* Initialize the programs's initial output
+    updateOutput(programRef.draw());
+}
 
 export default function OS() {
     const [output, setOutput] = useState('');
-    const baseTerminalRef = useRef(null);
-    const programRef = useRef(null);
-    const updateRef = useRef();
-    const previousTimeRef = useRef();
-
-
-    //* Setup update callback
-    const refreshCallback = (newOutput) => {
-        setOutput(newOutput);
-    };
-
-    const updateLoop = (time) => {
-        if (previousTimeRef.current !== undefined) {
-            const deltaTime = time - previousTimeRef.current;
-
-            //* If a program has an update function, run it!
-            if (typeof programRef.current.update === "function") {
-                programRef.current.update(deltaTime);
-            }
-        }
-
-        previousTimeRef.current = time;
-        updateRef.current = requestAnimationFrame(updateLoop);
-    };
-
-    function focusProgram(program) {
-        if (programRef.current)
-            programRef.current.refreshCallback = null;
-
-        programRef.current = program;
-        programRef.current.refreshCallback = refreshCallback;
-
-        //* Initialize the programs's initial output
-        setOutput(programRef.current.draw());
-    }
 
     function Initialize() {
-        baseTerminalRef.current = new Terminal();
-        focusProgram(baseTerminalRef.current);
+        baseTerminalRef = new Terminal();
+        updateOutput = (newOut) => { setOutput(newOut); }
+        runProgram(baseTerminalRef);
         initialized = true;
     }
 
     useEffect(() => {
-        if (!initialized) {
-            Initialize();
-        }
-
         //* Define the keydown event handler
         const handleKeyDown = (event) => {
-            if (programRef.current) {
-                programRef.current.onKeyDown(event);
+            if (programRef) {
+                programRef.onKeyDown(event);
             }
         };
 
         //* Add the event listener
         window.addEventListener('keydown', handleKeyDown);
 
-        updateRef.current = requestAnimationFrame(updateLoop);
+        updateRef = requestAnimationFrame(updateLoop);
 
         //* Cleanup
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
-            cancelAnimationFrame(programRef.current);
+            cancelAnimationFrame(programRef);
         };
     }, []);
+
+    if (!initialized)
+        Initialize();
 
     return (
         <div className="program" >

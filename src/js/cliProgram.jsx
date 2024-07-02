@@ -83,7 +83,7 @@ class CLI extends Program {
                         </React.Fragment>
                     ))}
                 </div>
-                <input type="text" id="input" autofocus></input>
+                <input type="text" id="input" autoFocus></input>
             </div>
         );
     }
