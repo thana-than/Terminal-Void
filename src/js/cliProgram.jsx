@@ -3,6 +3,8 @@ import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Program from "./program";
 
+function isWhitespaceString(str) { return !/\S/.test(str); }
+
 export default class CLI extends Program {
     commandHistory = [];
     historyIndex = -1;
@@ -56,7 +58,7 @@ export default class CLI extends Program {
 
     async sendCommand(command) {
         this.commandRunning = true;
-        const cleaned_command = command.toLowerCase()
+        const cleaned_command = command.toLowerCase().trim()
 
         const context = {
             cli: this
@@ -93,7 +95,7 @@ export default class CLI extends Program {
             const command = inputElement.value;
             inputElement.value = '';
 
-            if (this.commandHistory[this.commandHistory.length - 1] != command)
+            if (!isWhitespaceString(command) && this.commandHistory[this.commandHistory.length - 1] != command)
                 this.commandHistory.push(command);
 
             //* If we are using a max size for our command history, enforce it by removing the first element of the history (if over max)
