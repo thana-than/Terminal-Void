@@ -140,6 +140,15 @@ const HELP = {
     }
 }
 
+const EXAMINE = {
+    keys: ['examine', 'ex'],
+    invoke: function (params, context) {
+        if (params.length != 1)
+            return "examine command takes 1 parameter (path)";
+        return Directory.examine(params[0]);
+    }
+};
+
 function smartCommand(command, context) {
     let node = Directory.get(command)
     if (node) //* Start by seeing if we can navigate a directory
@@ -154,7 +163,7 @@ function smartCommand(command, context) {
 }
 
 const interpreter = new Interpreter(
-    [CD, RUN, LIST, CLEAR, HELP],
+    [CD, RUN, LIST, CLEAR, HELP, EXAMINE],
     smartCommand
 );
 
