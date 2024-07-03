@@ -61,7 +61,8 @@ export default class CLI extends Program {
         const cleaned_command = command.toLowerCase().trim()
 
         const context = {
-            cli: this
+            cli: this,
+            interpreter: this.interpreter,
         }
 
         const interpret = typeof this.interpreter.Run === 'function' ? this.interpreter.Run : this.interpreter;
