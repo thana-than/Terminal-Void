@@ -49,7 +49,7 @@ const LIST = {
         return (
             <>
                 {this.help}
-                <div style={{ color: 'var(--secondary-color)' }}>Optional Parameter: Directory path</div>
+                <div style={{ color: 'var(--secondary-color)' }}>Optional Parameters: Directory paths</div>
             </>
         );
     },
@@ -60,16 +60,22 @@ const LIST = {
         let contents = [];
         params.forEach(path => {
             const n = Directory.get(path);
-            if (n)
+            if (n && !n.isFile) {
+                contents.push(`${n.fullName}:`)
                 contents.push(...ls(n));
-            else
+            }
+            else {
                 contents.push(`Path '${path}' is not a directory.`);
+            }
         });
 
         return str(contents);
 
         function str(contents) {
             return contents.map(node => {
+                if (typeof node === 'string')
+                    return node;
+
                 let icon = '🗀';
                 if (node.isFile)
                     icon = '🗎';
