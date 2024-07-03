@@ -69,11 +69,20 @@ const LIST = {
         return str(contents);
 
         function str(contents) {
-            return contents.map(name => `-${name} `);
+            return contents.map(node => {
+                let icon = '🗀';
+                if (node.isFile)
+                    icon = '🗎';
+
+                return <div key={uuidv4()}>{icon} {node.fullName}</div>
+            });
         }
 
         function ls(node) {
-            return Array.from(node.children.values(), (n) => n.fullName);
+            const arr = Array.from(node.children.values());
+            arr.sort((a, b) => { return a.isFile - b.isFile; });
+
+            return arr;
         }
     }
 };
