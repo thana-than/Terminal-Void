@@ -16,6 +16,8 @@ export default class CLI extends Program {
     ready_pressToClose = false;
     queue_pressToClose = false;
 
+    themeStyle = "cliTheme";
+
     constructor(interpreter) {
         super();
         this.interpreter = interpreter;

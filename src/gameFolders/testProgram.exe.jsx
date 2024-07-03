@@ -11,9 +11,7 @@ export default class TestProgram extends Program {
 
     draw() {
         return (
-            <div style={{ border: '2px solid red', width: '100%', height: '100%' }}>
-                Test Program! {this.testCounter}
-            </div>
+            <> Test Program! {this.testCounter} </>
         );
     }
 }

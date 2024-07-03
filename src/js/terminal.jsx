@@ -76,4 +76,5 @@ const interpreter = new Interpreter(
 );
 
 const Terminal = new CLI(interpreter);
+Terminal.themeStyle = "terminalTheme";
 export default Terminal;
