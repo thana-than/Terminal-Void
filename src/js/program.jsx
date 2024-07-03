@@ -3,6 +3,7 @@ import React from 'react';
 export default class Program {
     refreshCallback = null;
     closeCallback = null;
+    themeStyle = "programTheme";
 
     onKeyDown() { this.close(); }
     onKeyUp() { }
@@ -27,7 +28,7 @@ export default class Program {
 
     draw() {
         return (
-            <div style={{ border: '2px solid red', width: '100%', height: '100%' }}>Program Block</div>
+            <>Program Block</>
         );
     }
 }

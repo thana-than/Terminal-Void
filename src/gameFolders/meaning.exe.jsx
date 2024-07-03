@@ -14,4 +14,6 @@ export default class Meaning extends CLI {
     }
 
     startMessage = <p>What is the meaning of life?<br></br></p>;
+
+    static examine = "A short quiz!";
 }

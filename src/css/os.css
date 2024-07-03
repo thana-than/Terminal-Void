@@ -1,7 +1,21 @@
 body {
     font-family: monospace;
     background: #000;
+}
 
+.programTheme {
+    --primary-color: #fff;
+    --secondary-color: #ff0;
+}
+
+.terminalTheme {
+    --primary-color: #fff;
+    --secondary-color: #aaa;
+}
+
+.cliTheme {
+    --primary-color: #0f0;
+    --secondary-color: #0a0;
 }
 
 img {
@@ -14,7 +28,7 @@ img {
 }
 
 .response {
-    color: #fff;
+    color: var(--primary-color);
 }
 
 .textFile p {
@@ -30,18 +44,18 @@ img {
     left: 50%;
     margin-right: -50%;
     transform: translate(-50%, -50%);
+    border: 1px solid;
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
 }
 
 .program,
 .program input,
 .program #output {
-    color: #0f0;
-    border-color: #0f0;
     font-family: monospace;
 }
 
 .cli {
-    border: 1px solid;
     width: 100%;
     height: 100%;
     display: inline-flex;
@@ -58,6 +72,7 @@ img {
     width: 100%;
     flex-flow: column;
     overflow-y: auto;
+    color: var(--secondary-color);
 }
 
 input {
@@ -66,6 +81,8 @@ input {
     box-sizing: border-box;
     background: #000;
     border: solid;
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
     border-width: 1px 0 0 0;
     padding-top: 10px;
     outline: none;

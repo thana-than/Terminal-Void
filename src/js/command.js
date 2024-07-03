@@ -2,6 +2,7 @@ const REGEX_SPACE = /\s+/ //TODO allow quotes to keep spaces
 
 export default class Interpreter {
     commands = new Map();
+    commandArray = [];
     defaultCommand;
     constructor(commands, defaultCommand) {
         //*If commands aren't an array, we are going to assume this is a simple interpreter that takes one function
@@ -9,6 +10,7 @@ export default class Interpreter {
             this.defaultCommand = commands;
             return;
         }
+        this.commandArray = commands;
 
         commands.forEach(command => {
             const keys = command.keys;
@@ -22,6 +24,9 @@ export default class Interpreter {
         this.defaultCommand = defaultCommand;
     }
 
+    Get(command) {
+        return this.commands.get(command);
+    }
 
     Run(command, context) {
         const cmd = command.split(REGEX_SPACE); //*Splits / removes whitespace chunks

@@ -27,6 +27,25 @@ class FileHandle {
         return null;
     }
 
+    static async examine(node) {
+        const handle = this.fileHandles.get(node.type)
+        if (!handle) {
+            return defaultExamine;
+        }
+
+        Global.log(`Examining ${node.fullName} at ${node.pathLink}`);
+
+        const file = await load(node.hash);
+        if (file) {
+            Global.log(`Examining file at path ${node.pathLink}.`)
+            const desc = handle.examine(node, file);
+            if (desc)
+                return desc;
+        }
+
+        return defaultExamine;
+    }
+
     constructor(extensions) {
         this.extensions = extensions;
         this.extensions.forEach(key => {
@@ -34,6 +53,8 @@ class FileHandle {
         });
     }
 }
+
+const defaultExamine = "A file.";
 
 async function load(hash) {
     const importComponent = gameFiles[hash];
@@ -74,7 +95,7 @@ const TextHandle = fileHandleFactory({
     },
 
     examine: function (node, file) {
-        return "A file."; //TODO swap this out with default examine when possible 
+        return defaultExamine;
     },
 })
 
@@ -145,14 +166,28 @@ const JSXHandle = fileHandleFactory({
     },
 
     examine: function (node, file) {
-        const tags = file().props.children;
-        if (!tags)
-            return null;
+        if (file.examine) {
+            if (typeof file.examine === 'function')
+                return file.examine();
+            return file.examine;
+        }
 
-        //* Search the react tags to find a meta element with either the examine or description tag
-        const match = tags.find((element) => element.type == 'meta' && (element.props.name == 'examine' || element.props.name == 'description'));
-        if (match)
-            return match.props.content;
+        const fileType = file.prototype || file;
+        if (fileType instanceof Program) {
+            return 'A Program.'
+        }
+
+        //* we read the meta tag based off of the way webpack compresses it.
+        //*Captures the content in a block similar to this:
+        //* ("meta", {
+        //*     name: "examine",
+        //*     content: "this is a description"
+        //* }));
+
+        const regex = /(?:"meta",)(?:(?:.|\n)*)name:\s*?"(?:examine|description)"(?:(?:.|\n)*)content:\s*?"(.*)"/;
+        const regex_match = file.toString().match(regex);
+        if (regex_match)
+            return regex_match[1]; //*return first capture group
 
         return null;
     }

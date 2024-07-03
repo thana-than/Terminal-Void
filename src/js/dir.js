@@ -27,6 +27,14 @@ class Directory {
         return Directory.runNode(node);
     }
 
+    static examine(path) {
+        let node = Directory.get(path)
+        if (!node) return `'${path}' does not exist.`;
+        if (!node.isFile) return 'A file directory.';
+
+        return FileHandle.examine(node);
+    }
+
     static runNode(node) {
         return FileHandle.open(node);
     }

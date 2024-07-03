@@ -84,8 +84,10 @@ export default function OS() {
         Initialize();
 
     return (
-        <div className="program" >
-            {output}
-        </div >
+        <div className={runningProgram.themeStyle}>
+            <div className="program" >
+                {output}
+            </div >
+        </div>
     );
 }

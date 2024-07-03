@@ -26,6 +26,10 @@ export default function TestBlock() {
     }, []);
 
     return (
-        <div key={uniqueId}>{dynamicContents}</div>
+        <>
+            <div key={uniqueId}>{dynamicContents}</div>
+            <meta name="examine" content="this is a description"></meta>
+        </>
+
     );
 }
