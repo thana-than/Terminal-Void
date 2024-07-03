@@ -4,18 +4,18 @@ body {
 }
 
 .programTheme {
-    --primary-color: #ff0;
-    --secondary-color: #fff;
+    --primary-color: #fff;
+    --secondary-color: #ff0;
 }
 
 .terminalTheme {
-    --primary-color: #aaa;
-    --secondary-color: #fff;
+    --primary-color: #fff;
+    --secondary-color: #aaa;
 }
 
 .cliTheme {
-    --primary-color: #0a0;
-    --secondary-color: #0f0;
+    --primary-color: #0f0;
+    --secondary-color: #0a0;
 }
 
 img {
@@ -28,7 +28,7 @@ img {
 }
 
 .response {
-    color: var(--secondary-color);
+    color: var(--primary-color);
 }
 
 .textFile p {
@@ -45,8 +45,8 @@ img {
     margin-right: -50%;
     transform: translate(-50%, -50%);
     border: 1px solid;
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
 }
 
 .program,
@@ -72,7 +72,7 @@ img {
     width: 100%;
     flex-flow: column;
     overflow-y: auto;
-    color: var(--primary-color);
+    color: var(--secondary-color);
 }
 
 input {
@@ -81,8 +81,8 @@ input {
     box-sizing: border-box;
     background: #000;
     border: solid;
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
     border-width: 1px 0 0 0;
     padding-top: 10px;
     outline: none;
