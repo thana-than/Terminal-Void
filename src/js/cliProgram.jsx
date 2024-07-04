@@ -11,8 +11,8 @@ export default class CLI extends Program {
     commandHistory_maxSize = 50;
     blocks = [];
     commandRunning = false;
-    startMessage = <p>Welcome!<br></br></p>;
-    pressToCloseMessage = <p>Press any key to continue.</p>
+    startMessage = <>Welcome!</>;
+    pressToCloseMessage = <>Press any key to continue.</>
     initialized = false;
 
     ready_pressToClose = false;
@@ -26,7 +26,7 @@ export default class CLI extends Program {
     }
 
     initialize() {
-        this.blocks.push({ key: uuidv4(), type: 'response', content: this.startMessage })
+        this.blocks.push(<div className='response'>{this.startMessage}</div>)
         this.initialized = true;
     }
 
@@ -41,13 +41,12 @@ export default class CLI extends Program {
     }
 
     printCommand(command, response) {
-        const commandId = uuidv4();
-        const responseId = uuidv4();
-
         if (command)
-            this.blocks.push({ key: commandId, type: 'command', content: `> ${command}` });
+            var commandMarkup = <div className='command'>&gt; {command}</div>
 
-        this.blocks.push({ key: responseId, type: 'response', content: response });
+        var responseMarkup = <div className='response'>{response}</div>
+
+        this.blocks.push(<>{commandMarkup}{responseMarkup}</>)
 
         //TODO this only kind of works and only if the command doesn't have an await.
         //TODO find a way to ensure the update only occurs once it's ready
@@ -136,16 +135,16 @@ export default class CLI extends Program {
         if (this.queue_pressToClose) {
             this.queue_pressToClose = false;
             this.ready_pressToClose = true;
-            this.blocks.push({ key: uuidv4(), type: 'response', content: this.pressToCloseMessage })
+            this.blocks.push(<div className='response'>{this.pressToCloseMessage}</div>);
         }
 
         return (
             <div className="cli">
                 <div id="output">
                     {this.blocks.map(block => (
-                        <React.Fragment key={block.key}>
-                            <div className={block.type}>{block.content}</div>
-                        </React.Fragment>
+                        <div key={uuidv4()} className='commandBlock'>
+                            {block}
+                        </div>
                     ))}
                 </div>
                 <input type="text" id="input" autoFocus></input>
