@@ -23,7 +23,10 @@ export default class CLI extends Program {
 
     ready_pressToClose = false;
     queue_pressToClose = false;
-    queue_scrollToBottomOnRefresh = false;
+    queue_scrollToLastOnRefresh = false;
+    offset_scrollToLast = 10;
+
+    lastCommandBlockDivID = 0;
 
     themeStyle = "cliTheme";
 
@@ -49,10 +52,8 @@ export default class CLI extends Program {
 
     async refresh() {
         super.refresh();
-        if (this.queue_scrollToBottomOnRefresh) {
-            await waitForNextFrame();
-            this.scrollOutputToBottom();
-            this.queue_scrollToBottomOnRefresh = false;
+        if (this.queue_scrollToLastOnRefresh) {
+            await this.scrollOutputToLastDiv();
         }
     }
 
@@ -85,7 +86,7 @@ export default class CLI extends Program {
         this.printCommand(command, response);
 
         this.commandRunning = false;
-        this.queue_scrollToBottomOnRefresh = true;
+        this.queue_scrollToLastOnRefresh = true;
         this.refresh()
     }
 
@@ -134,10 +135,25 @@ export default class CLI extends Program {
         }
     }
 
-    scrollOutputToBottom() {
-        const outputDiv = document.getElementById('output');
-        outputDiv.scrollTop = outputDiv.scrollHeight;
-        console.log("scroll");
+    async scrollOutputToLastDiv() {
+        this.queue_scrollToLastOnRefresh = false;
+        var lastTop = -1;
+        for (let i = 0; i < 60; i++) {
+            var outputDiv = document.getElementById('output');
+            var lastCommandDiv = document.getElementById(this.lastCommandBlockDivID);
+
+            if (lastTop != -1 && outputDiv.scrollTop !== lastTop) {
+                console.log("SCROLL UPDATED FRAME " + i + " | before: " + lastTop + " | after: " + outputDiv.scrollTop);
+                break;
+            }
+            lastTop = outputDiv.scrollTop;
+
+            if (lastCommandDiv)
+                outputDiv.scrollTop = lastCommandDiv.offsetTop - this.offset_scrollToLast;
+
+            //*Wait one frame!
+            await new Promise(resolve => requestAnimationFrame(resolve));
+        }
     }
 
     draw() {
@@ -153,11 +169,12 @@ export default class CLI extends Program {
         return (
             <div className="cli">
                 <div id="output">
-                    {this.blocks.map(block => (
-                        <div key={uuidv4()} className='commandBlock'>
+                    {this.blocks.map(block => {
+                        this.lastCommandBlockDivID = uuidv4();
+                        return (<div key={this.lastCommandBlockDivID} id={this.lastCommandBlockDivID} className='commandBlock'>
                             {block}
-                        </div>
-                    ))}
+                        </div>);
+                    })}
                 </div>
                 <input type="text" id="input" autoFocus></input>
             </div>
