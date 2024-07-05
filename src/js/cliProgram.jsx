@@ -5,12 +5,6 @@ import Program from "./program";
 
 function isWhitespaceString(str) { return !/\S/.test(str); }
 
-function waitForNextFrame() {
-    return new Promise((resolve) => {
-        requestAnimationFrame(resolve);
-    });
-}
-
 export default class CLI extends Program {
     commandHistory = [];
     historyIndex = -1;
@@ -36,8 +30,8 @@ export default class CLI extends Program {
     }
 
     initialize() {
-        this.blocks.push(<div className='response'>{this.startMessage}</div>)
         this.initialized = true;
+        this.print(<div className='response'>{this.startMessage}</div>, false);
     }
 
     pressToClose(refreshImmediate = false) {
@@ -57,13 +51,23 @@ export default class CLI extends Program {
         }
     }
 
-    printCommand(command, response) {
-        if (command)
-            var commandMarkup = <div className='command'>&gt; {command}</div>
+    print(markup, refresh = true) {
+        this.lastCommandBlockDivID = uuidv4();
 
+        const block = <div id={this.lastCommandBlockDivID} className='commandBlock'> {markup} </div>
+        this.blocks.push(block);
+        this.queue_scrollToLastOnRefresh = true;
+        if (refresh) this.refresh()
+    }
+
+    printCommand(command, response) {
+        if (command) {
+            var commandMarkup = <div className='command'>&gt; {command}</div>
+        }
         var responseMarkup = <div className='response'>{response}</div>
 
-        this.blocks.push(<>{commandMarkup}{responseMarkup}</>)
+        this.print(<>{commandMarkup}{responseMarkup}</>);
+
     }
 
     async sendCommand(command) {
@@ -84,10 +88,7 @@ export default class CLI extends Program {
         }
 
         this.printCommand(command, response);
-
         this.commandRunning = false;
-        this.queue_scrollToLastOnRefresh = true;
-        this.refresh()
     }
 
     onKeyDown(event) {
@@ -139,6 +140,7 @@ export default class CLI extends Program {
         this.queue_scrollToLastOnRefresh = false;
         var lastTop = -1;
         for (let i = 0; i < 60; i++) {
+
             var outputDiv = document.getElementById('output');
             var lastCommandDiv = document.getElementById(this.lastCommandBlockDivID);
 
@@ -146,9 +148,9 @@ export default class CLI extends Program {
                 console.log("SCROLL UPDATED FRAME " + i + " | before: " + lastTop + " | after: " + outputDiv.scrollTop);
                 break;
             }
-            lastTop = outputDiv.scrollTop;
 
-            if (lastCommandDiv)
+            lastTop = outputDiv.scrollTop;
+            if (lastCommandDiv != null)
                 outputDiv.scrollTop = lastCommandDiv.offsetTop - this.offset_scrollToLast;
 
             //*Wait one frame!
@@ -163,18 +165,15 @@ export default class CLI extends Program {
         if (this.queue_pressToClose) {
             this.queue_pressToClose = false;
             this.ready_pressToClose = true;
-            this.blocks.push(<div className='response'>{this.pressToCloseMessage}</div>);
+            this.print(<div className='response'>{this.pressToCloseMessage}</div>, false);
         }
 
         return (
             <div className="cli">
                 <div id="output">
-                    {this.blocks.map(block => {
-                        this.lastCommandBlockDivID = uuidv4();
-                        return (<div key={this.lastCommandBlockDivID} id={this.lastCommandBlockDivID} className='commandBlock'>
-                            {block}
-                        </div>);
-                    })}
+                    {this.blocks.map(block => (
+                        <React.Fragment key={block.props.id}>{block}</React.Fragment>
+                    ))}
                 </div>
                 <input type="text" id="input" autoFocus></input>
             </div>
