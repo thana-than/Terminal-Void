@@ -1,3 +1,4 @@
+import Data from "./gameData";
 const REGEX_SPACE = /\s+/ //TODO allow quotes to keep spaces
 
 export default class Interpreter {
@@ -25,14 +26,33 @@ export default class Interpreter {
     }
 
     Get(command) {
-        return this.commands.get(command);
+        const commandObj = this.commands.get(command);
+
+        //*If the command requires an accessKey but we don't have it, return null
+        if (!this.HasAccess(commandObj))
+            return null;
+
+        return commandObj;
+    }
+
+    HasAccess(command) {
+        const commandObj = (typeof command === 'string') ? this.commands.get(command) : command;
+
+        if (!commandObj)
+            return false;
+
+        //*If the command requires an accessKey but we don't have it, return null
+        if (commandObj.accessKey && !Data.accessKeys.has(commandObj.accessKey))
+            return false;
+
+        return true;
     }
 
     async Run(command, context) {
         const cmd = command.split(REGEX_SPACE); //*Splits / removes whitespace chunks
         const params = cmd.slice(1);
 
-        const requested = this.commands.get(cmd[0])
+        const requested = this.Get(cmd[0])
         if (!requested) {
             if (this.defaultCommand && params.length == 0) {
                 const response = await this.defaultCommand(cmd[0]);
@@ -48,7 +68,7 @@ export default class Interpreter {
     //*Checks if we want the command used to call the designated command shown in the display
     AllowCommandDisplay(command) {
         const cmd = command.split(REGEX_SPACE);
-        const requested = this.commands.get(cmd[0])
+        const requested = this.Get(cmd[0])
         if (requested && requested.allowCommandDisplay != null) {
             return requested.allowCommandDisplay;
         }

@@ -97,6 +97,7 @@ const CLEAR = {
     keys: ['clear', 'cls'],
     help: "Clears the terminal screen",
     allowCommandDisplay: false,
+    accessKey: "CLEAR",
     invoke: function (params, context) {
         context.cli.clear();
     }
@@ -122,7 +123,7 @@ const HELP = {
         else {
             var str = [];
             context.interpreter.commandArray.forEach(command => {
-                if (command.help)
+                if (interpreter.HasAccess(command) && command.help)
                     str.push(this.getHelpBlock(command));
             });
         }
