@@ -1,6 +1,9 @@
 import { FileHandle } from './fileHandle.js';
 
 const REGEX_SLASH = /[\\/]/;
+const REGEX_ROOT = /^(\s*(?:root|\/|\\))/i;
+const ROOT_NAME = 'ROOT';
+const START_DIR = '/instance/'
 
 class Directory {
     static root;
@@ -22,7 +25,7 @@ class Directory {
     static async run(path) {
         let node = Directory.get(path)
         if (!node) return `File '${path}' does not exist.`;
-        if (!node.isFile) return `Path '${path}' is a directory, not a file.`;
+        if (!node.isFile) return `Path '${path}' is a folder, not a file.`;
 
         return await Directory.runNode(node);
     }
@@ -30,7 +33,7 @@ class Directory {
     static examine(path) {
         let node = Directory.get(path)
         if (!node) return `'${path}' does not exist.`;
-        if (!node.isFile) return 'A file directory.';
+        if (!node.isFile) return 'A folder.';
 
         return FileHandle.examine(node);
     }
@@ -41,8 +44,14 @@ class Directory {
 
     static get(path) {
         //* If the path starts with a slash, we start at root. If not, this is a local path
-        let currentNode = REGEX_SLASH.test(path.charAt(0)) ? this.root : this.current;
+        let currentNode = this.current;
 
+        const rootMatch = path.match(REGEX_ROOT);
+        if (rootMatch) {
+            currentNode = this.root;
+            path = path.replace(rootMatch[1], "");
+        }
+        console.log(currentNode);
         //* Splits the path up so we can work through each part
         const pathArray = path.split(REGEX_SLASH)
         const len = pathArray.length;
@@ -53,7 +62,7 @@ class Directory {
             let nextNode = currentNode
 
             //* ".." means go up one directory
-            if (next == "..") {
+            if (next == ".." || next == "back") {
                 if (currentNode.parent)
                     nextNode = currentNode.parent;
                 //* If theres no parent, we're at the root and we can just keep the currentNode
@@ -80,8 +89,10 @@ class Directory {
 
     static generateFileSystem(json) {
         this.root = this.buildNodes(json, null);
-        this.root.name = "ROOT" //*We rename the gameFolder to ROOT for gameplay
-        this.current = this.root;
+        //*We rename the gameFolder to ROOT for gameplay
+        this.root.fullName = this.root.name = ROOT_NAME;
+        //*Set our start point
+        Directory.cd(START_DIR);
         return this.root;
     }
 
@@ -107,6 +118,7 @@ class PathNode {
         this.pathLink = jsonNode["pathLink"]
         this.type = jsonNode["type"]
         this.isFile = this.type != "directory"
+        this.isFolder = !this.isFile;
         this.parent = parent
         this.gameExt = jsonNode["gameExt"]
         this.fullName = this.name;

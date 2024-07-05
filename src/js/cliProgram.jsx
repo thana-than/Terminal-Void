@@ -10,6 +10,7 @@ export default class CLI extends Program {
     historyIndex = -1;
     commandHistory_maxSize = 50;
     blocks = [];
+    clearedBlocks = []
     commandRunning = false;
     startMessage = <>Welcome!</>;
     pressToCloseMessage = <>Press any key to continue.</>
@@ -17,13 +18,18 @@ export default class CLI extends Program {
 
     ready_pressToClose = false;
     queue_pressToClose = false;
-    queue_scrollToLastOnRefresh = false;
+    queue_snapToBottom = false;
+
+    scroll_target
 
     getFontSize() { return parseFloat(getComputedStyle(document.querySelector('.program')).fontSize) };
 
-    lastCommandBlockDivID = 0;
+    autoScrollTargetDivID = 0;
 
     themeStyle = "cliTheme";
+
+    cullMax_commandBlocks = 100;
+    cullMax_scrollHeight = 5000;
 
     constructor(interpreter) {
         super();
@@ -32,7 +38,7 @@ export default class CLI extends Program {
 
     initialize() {
         this.initialized = true;
-        this.print(<div className='response'>{this.startMessage}</div>, false);
+        this.print(<div>{this.startMessage}</div>, false);
     }
 
     pressToClose(refreshImmediate = false) {
@@ -42,24 +48,25 @@ export default class CLI extends Program {
     }
 
     clear() {
+        this.clearedBlocks = [...this.blocks];
         this.blocks.length = 0;
     }
 
-    async refresh() {
-        super.refresh();
-        if (this.queue_scrollToLastOnRefresh) {
-            await this.scrollOutputToLastDiv();
-        }
+    undoClear() {
+        if (this.clearedBlocks.length == 0)
+            return "No history to restore"
+        this.blocks = [...this.clearedBlocks, ...this.blocks]
+        this.clearedBlocks.length = 0;
+        return "Terminal history restored";
     }
 
-    print(markup, refresh = true, allowAutoScroll = true) {
+    print(markup, refresh = true, autoScrollTarget = true) {
         const id = uuidv4();
         const block = <div id={id} className='commandBlock'> {markup} </div>
         this.blocks.push(block);
 
-        if (allowAutoScroll) {
-            this.lastCommandBlockDivID = id;
-            this.queue_scrollToLastOnRefresh = true;
+        if (autoScrollTarget) {
+            this.autoScrollTargetDivID = id;
         }
 
         if (refresh) {
@@ -68,13 +75,20 @@ export default class CLI extends Program {
     }
 
     printCommand(command, response) {
+        if (!command && !response) {
+            this.refresh();
+            return;
+        }
+
         if (command) {
             var commandMarkup = <div className='command'>&gt; {command}</div>
         }
-        var responseMarkup = <div className='response'>{response}</div>
+        if (response) {
+            var responseMarkup = <div className='response'>{response}</div>
+        }
+
 
         this.print(<>{commandMarkup}{responseMarkup}</>);
-
     }
 
     async sendCommand(command) {
@@ -87,11 +101,19 @@ export default class CLI extends Program {
         }
 
         const interpret = typeof this.interpreter.Run === 'function' ? this.interpreter.Run : this.interpreter;
-        const response = await interpret.call(this.interpreter, cleaned_command, context);
+        const payload = await interpret.call(this.interpreter, cleaned_command, context);
 
-        if (typeof this.interpreter.AllowCommandDisplay === 'function') {
-            if (!this.interpreter.AllowCommandDisplay(cleaned_command))
-                command = null;
+        //*Payload parsing
+        let response = payload;
+        if (payload.ignorePrintCommand) {
+            command = null;
+        }
+
+        if (payload.ignorePrintResponse) {
+            response = null;
+        }
+        else if (payload.response) {
+            response = payload.response;
         }
 
         this.printCommand(command, response);
@@ -143,47 +165,83 @@ export default class CLI extends Program {
         }
     }
 
-    async scrollOutputToLastDiv() {
-        this.queue_scrollToLastOnRefresh = false;
-        var lastTop = -1;
-        for (let i = 0; i < 60; i++) {
+    async autoScroll() {
+        var outputDiv = document.getElementById('output');
+        const autoScrollTargetDiv = document.getElementById(this.autoScrollTargetDivID);
+        //* If we have queued to just snap to the bottom, lets do that and get outa here
+        if (this.queue_snapToBottom || !autoScrollTargetDiv) {
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+            this.queue_snapToBottom = false;
+            return;
+        }
 
-            var outputDiv = document.getElementById('output');
-            var lastCommandDiv = document.getElementById(this.lastCommandBlockDivID);
+        const scrollTarget = document.getElementById(this.autoScrollTargetDivID).offsetTop - this.getFontSize();
+        var scrollTop;
+        updateScrollTop();
+        outputDiv.scrollTo({ top: scrollTop, behavior: 'smooth' });
 
-            if (lastTop != -1 && outputDiv.scrollTop !== lastTop) {
-                console.log("SCROLL UPDATED FRAME " + i + " | before: " + lastTop + " | after: " + outputDiv.scrollTop);
+        //*We keep checking for some frames ahead in case the last div will expand (due to images or otherwise)
+        //*If there is an expansion, we'll scroll one more time then exit this function
+        for (var i = 0; i < 10; i++) {
+            let last_scrollTop = scrollTop;
+            updateScrollTop();
+
+            if (last_scrollTop != scrollTop) {
+                console.log("SCROLL UPDATED: frame " + i);
+                outputDiv.scrollTo({ top: scrollTop, behavior: 'smooth' });
                 break;
             }
 
-            lastTop = outputDiv.scrollTop;
-            if (lastCommandDiv != null)
-                outputDiv.scrollTop = lastCommandDiv.offsetTop - this.getFontSize();
-
-            //*Wait one frame!
             await new Promise(resolve => requestAnimationFrame(resolve));
+        }
+
+        //*Detect where we can scroll based off of our target and max scroll capability
+        function updateScrollTop() {
+            outputDiv = document.getElementById('output');
+            const bottomOut = outputDiv.scrollHeight - outputDiv.offsetHeight;
+            scrollTop = Math.min(bottomOut, scrollTarget);
         }
     }
 
-    // getOutputEndSpacing() {
-    //     var outputDiv = document.getElementById('output');
+    cullingTest() {
+        const outputDiv = document.getElementById('output');
 
-    //     if (!outputDiv)
-    //         return 0;
+        let cullCount = 0;
+        let scrollHeight = outputDiv.scrollHeight;
 
-    //     const size = outputDiv.offsetHeight - this.getFontSize();
-    //     return `${size}px`;
-    // }
+        while (scrollHeight > this.cullMax_scrollHeight) {
+            const elementHeight = document.getElementById(this.blocks[cullCount].props.id).offsetHeight;
+            scrollHeight -= elementHeight;
+            cullCount++;
+        }
 
-    draw() {
+        while (this.blocks.length - cullCount > this.cullMax_commandBlocks) {
+            cullCount++;
+        }
+
+        if (cullCount > 0) {
+            this.blocks.splice(0, cullCount);
+            console.log("CULLED " + cullCount);
+        }
+    }
+
+    run() {
+        this.queue_snapToBottom = true;
+    }
+
+    preDrawStep() {
         if (!this.initialized)
             this.initialize();
 
         if (this.queue_pressToClose) {
             this.queue_pressToClose = false;
             this.ready_pressToClose = true;
-            this.print(<div className='response'>{this.pressToCloseMessage}</div>, false, false);
+            this.print(<div>{this.pressToCloseMessage}</div>, false, false);
         }
+    }
+
+    draw() {
+        this.preDrawStep();
 
         return (
             <div className="cli">
@@ -191,11 +249,14 @@ export default class CLI extends Program {
                     {this.blocks.map(block => (
                         <React.Fragment key={block.props.id}>{block}</React.Fragment>
                     ))}
-
-                    {/* <div style={{ marginBlockEnd: this.getOutputEndSpacing() }}></div> */}
                 </div>
                 <input type="text" id="input" autoFocus></input>
             </div>
         );
+    }
+
+    async postRenderCallback() {
+        await this.autoScroll();
+        this.cullingTest();
     }
 }

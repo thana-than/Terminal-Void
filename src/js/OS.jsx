@@ -80,6 +80,12 @@ export default function OS() {
         };
     }, []);
 
+    useEffect(() => {
+        if (runningProgram && typeof runningProgram.postRenderCallback === 'function') {
+            runningProgram.postRenderCallback();
+        }
+    }, [output]);
+
     if (!initialized)
         Initialize();
 
