@@ -6,20 +6,29 @@ import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 const CD = {
-    keys: ['cd', 'goto'],
+    keys: ['goto', 'go', 'cd'],
     help: "Navigate to the folder at the given path",
+    accessKey: 'CLIENT',
+    accessFailed: "ACCESS DENIED: Permission level required: CLIENT",
     verboseHelp: function () {
         return (
             <>
                 {this.help}
-                <div style={{ color: 'var(--secondary-color)' }}>Required Parameter: Directory path</div>
+                <div className='subtext'>Required Parameter: Folder path</div>
+                <div className='tip'>Entering "goto BACK" will bring you up one folder</div>
+                <div className='tip'>TIP! Entering a folder path without this command will still work.</div>
             </>
         );
     },
     invoke: function (params) {
         if (params.length != 1)
             return "cd command takes 1 parameter (path)";
-        return Directory.cd(params[0])
+
+        const newDir = Directory.cd(params[0]);
+        const node = Directory.get(newDir);
+        if (node && node.isFolder)
+            return <>{newDir}:{LIST.invoke()}</>;
+        return newDir;
     }
 }
 
@@ -30,13 +39,14 @@ const RUN = {
         return (
             <>
                 {this.help}
-                <div style={{ color: 'var(--secondary-color)' }}>Required Parameter: File path</div>
+                <div className='subtext'>Required Parameter: File path</div>
+                <div className='tip'>TIP! Entering a file path without this command will still work.</div>
             </>
         );
     },
     invoke: async function (params) {
         if (params.length != 1)
-            return "run command takes 1 parameter (path)";
+            return "run command takes 1 parameter (folder path)";
 
         return await Directory.run(params[0]);
     }
@@ -44,17 +54,18 @@ const RUN = {
 
 const LIST = {
     keys: ['list', 'ls'],
-    help: "Lists the files in the given directory",
+    help: "Lists the files in the current folder",
     verboseHelp: function () {
         return (
             <>
-                {this.help}
-                <div style={{ color: 'var(--secondary-color)' }}>Optional Parameters: Directory paths</div>
+                Lists the files in the given folder
+                <div className='subtext'>Entering "list" alone will use the current folder</div>
+                <div className='subtext'>Optional Parameters: Folder paths</div>
             </>
         );
     },
     invoke: function (params) {
-        if (params.length == 0)
+        if (!params || params.length == 0)
             return str(ls(Directory.current));
 
         let contents = [];
@@ -65,7 +76,7 @@ const LIST = {
                 contents.push(...ls(n));
             }
             else {
-                contents.push(`Path '${path}' is not a directory.`);
+                contents.push(`Path '${path}' is not a folder.`);
             }
         });
 
@@ -96,15 +107,44 @@ const LIST = {
 const CLEAR = {
     keys: ['clear', 'cls'],
     help: "Clears the terminal screen",
-    allowCommandDisplay: false,
-    accessKey: "CLEAR",
+    verboseHelp: function () {
+        return (
+            <>
+                {this.help}
+                <div className='tip'>TIP! Entering "clear restore" will restore your last cleared screen</div>
+            </>
+        );
+    },
+    accessKey: 'CLIENT',
+    restore_regex: /restore|undo/i,
     invoke: function (params, context) {
+        if (params.length > 0) {
+            if (params.length == 1 && this.restore_regex.test(params[0])) {
+                return context.cli.undoClear();
+            }
+            else {
+                return `Clear command does not take "${params}" as a parameter`
+            }
+        }
+
         context.cli.clear();
+        const payload = {
+            ignorePrintCommand: true,
+            ignorePrintResponse: true,
+        }
+        return payload;
     }
 };
 
 const HELP = {
     keys: ['help', 'h'],
+    help: <>Enter "help &#40;command_name&#41;" for more info.</>,
+    verboseHelp: function () {
+        return <>
+            Describes available commands.
+            <div className='subtext'>{this.help}</div>
+        </>;
+    },
     invoke: function (params, context) {
         const len = params.length;
         if (len > 1) {
@@ -123,7 +163,9 @@ const HELP = {
         else {
             var str = [];
             context.interpreter.commandArray.forEach(command => {
-                if (interpreter.HasAccess(command) && command.help)
+                if (command == this)
+                    str.push(<div key={uuidv4()} className='subHead'>{this.help}</div>);
+                else if (interpreter.HasAccess(command) && command.help)
                     str.push(this.getHelpBlock(command));
             });
         }
@@ -131,18 +173,19 @@ const HELP = {
         return <>{str}</>;
     },
     getHelpBlock: function (command) {
-        return (<div key={uuidv4()}>{this.prefix(command)} {command.help}</div>);
+        return (<div key={uuidv4()}>{this.prefix(command)} <span className='small'>{command.help}</span></div>);
     },
     getVerboseHelpBlock: function (command) {
-        return (<div key={uuidv4()}>{this.prefix(command)} {command.verboseHelp()}</div>);
+        return (<div key={uuidv4()}>{this.prefix(command)}<br></br>{command.verboseHelp()}</div>);
     },
     prefix: function (command) {
-        return <>{command.keys[0]}<span style={{ color: 'var(--secondary-color)' }}> [{command.keys.join(', ')}]</span>:</>
+        return <>{command.keys[0]}<span className='subHead'> [{command.keys.join(', ')}]</span>:</>
     }
 }
 
 const EXAMINE = {
     keys: ['examine', 'ex'],
+    help: "Examines the target file or folder",
     invoke: function (params, context) {
         if (params.length != 1)
             return "examine command takes 1 parameter (path)";
@@ -154,21 +197,25 @@ async function smartCommand(command, context) {
     let node = Directory.get(command)
     if (node) //* Start by seeing if we can navigate a directory
     {
-        if (node.isFile)
-            return await Directory.runNode(node); //* Run if file
-        else
-            return Directory.cdNode(node); //* Nav if folder
+        if (node.isFile) {
+            //* Run if file
+            return await context.interpreter.Run(`run ${command}`, context);
+        }
+        else {
+            //* Nav if folder
+            return context.interpreter.Run(`cd ${command}`, context);
+        }
     }
 
     return null;
 }
 
 const interpreter = new Interpreter(
-    [CD, RUN, LIST, CLEAR, HELP, EXAMINE],
+    [HELP, LIST, EXAMINE, RUN, CD, CLEAR],
     smartCommand
 );
 
 const Terminal = new CLI(interpreter);
 Terminal.themeStyle = "terminalTheme";
-Terminal.startMessage = <>Welcome!<br></br>Type help to begin.</>;
+Terminal.startMessage = <>Welcome!<br></br>Enter "help" to view available commands.</>;
 export default Terminal;
