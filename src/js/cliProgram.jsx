@@ -18,7 +18,8 @@ export default class CLI extends Program {
     ready_pressToClose = false;
     queue_pressToClose = false;
     queue_scrollToLastOnRefresh = false;
-    offset_scrollToLast = 10;
+
+    getFontSize() { return parseFloat(getComputedStyle(document.querySelector('.program')).fontSize) };
 
     lastCommandBlockDivID = 0;
 
@@ -51,13 +52,19 @@ export default class CLI extends Program {
         }
     }
 
-    print(markup, refresh = true) {
-        this.lastCommandBlockDivID = uuidv4();
-
-        const block = <div id={this.lastCommandBlockDivID} className='commandBlock'> {markup} </div>
+    print(markup, refresh = true, allowAutoScroll = true) {
+        const id = uuidv4();
+        const block = <div id={id} className='commandBlock'> {markup} </div>
         this.blocks.push(block);
-        this.queue_scrollToLastOnRefresh = true;
-        if (refresh) this.refresh()
+
+        if (allowAutoScroll) {
+            this.lastCommandBlockDivID = id;
+            this.queue_scrollToLastOnRefresh = true;
+        }
+
+        if (refresh) {
+            this.refresh()
+        }
     }
 
     printCommand(command, response) {
@@ -151,12 +158,22 @@ export default class CLI extends Program {
 
             lastTop = outputDiv.scrollTop;
             if (lastCommandDiv != null)
-                outputDiv.scrollTop = lastCommandDiv.offsetTop - this.offset_scrollToLast;
+                outputDiv.scrollTop = lastCommandDiv.offsetTop - this.getFontSize();
 
             //*Wait one frame!
             await new Promise(resolve => requestAnimationFrame(resolve));
         }
     }
+
+    // getOutputEndSpacing() {
+    //     var outputDiv = document.getElementById('output');
+
+    //     if (!outputDiv)
+    //         return 0;
+
+    //     const size = outputDiv.offsetHeight - this.getFontSize();
+    //     return `${size}px`;
+    // }
 
     draw() {
         if (!this.initialized)
@@ -165,7 +182,7 @@ export default class CLI extends Program {
         if (this.queue_pressToClose) {
             this.queue_pressToClose = false;
             this.ready_pressToClose = true;
-            this.print(<div className='response'>{this.pressToCloseMessage}</div>, false);
+            this.print(<div className='response'>{this.pressToCloseMessage}</div>, false, false);
         }
 
         return (
@@ -174,6 +191,8 @@ export default class CLI extends Program {
                     {this.blocks.map(block => (
                         <React.Fragment key={block.props.id}>{block}</React.Fragment>
                     ))}
+
+                    {/* <div style={{ marginBlockEnd: this.getOutputEndSpacing() }}></div> */}
                 </div>
                 <input type="text" id="input" autoFocus></input>
             </div>

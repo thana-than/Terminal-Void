@@ -169,4 +169,5 @@ const interpreter = new Interpreter(
 
 const Terminal = new CLI(interpreter);
 Terminal.themeStyle = "terminalTheme";
+Terminal.startMessage = <>Welcome!<br></br>Type help to begin.</>;
 export default Terminal;
