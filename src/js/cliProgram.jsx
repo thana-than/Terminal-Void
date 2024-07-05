@@ -5,6 +5,12 @@ import Program from "./program";
 
 function isWhitespaceString(str) { return !/\S/.test(str); }
 
+function waitForNextFrame() {
+    return new Promise((resolve) => {
+        requestAnimationFrame(resolve);
+    });
+}
+
 export default class CLI extends Program {
     commandHistory = [];
     historyIndex = -1;
@@ -17,6 +23,7 @@ export default class CLI extends Program {
 
     ready_pressToClose = false;
     queue_pressToClose = false;
+    queue_scrollToBottomOnRefresh = false;
 
     themeStyle = "cliTheme";
 
@@ -40,6 +47,15 @@ export default class CLI extends Program {
         this.blocks.length = 0;
     }
 
+    async refresh() {
+        super.refresh();
+        if (this.queue_scrollToBottomOnRefresh) {
+            await waitForNextFrame();
+            this.scrollOutputToBottom();
+            this.queue_scrollToBottomOnRefresh = false;
+        }
+    }
+
     printCommand(command, response) {
         if (command)
             var commandMarkup = <div className='command'>&gt; {command}</div>
@@ -47,12 +63,6 @@ export default class CLI extends Program {
         var responseMarkup = <div className='response'>{response}</div>
 
         this.blocks.push(<>{commandMarkup}{responseMarkup}</>)
-
-        //TODO this only kind of works and only if the command doesn't have an await.
-        //TODO find a way to ensure the update only occurs once it's ready
-        setTimeout(() => {
-            this.scrollOutputToBottom();
-        }, 0);
     }
 
     async sendCommand(command) {
@@ -75,6 +85,7 @@ export default class CLI extends Program {
         this.printCommand(command, response);
 
         this.commandRunning = false;
+        this.queue_scrollToBottomOnRefresh = true;
         this.refresh()
     }
 
@@ -126,6 +137,7 @@ export default class CLI extends Program {
     scrollOutputToBottom() {
         const outputDiv = document.getElementById('output');
         outputDiv.scrollTop = outputDiv.scrollHeight;
+        console.log("scroll");
     }
 
     draw() {
