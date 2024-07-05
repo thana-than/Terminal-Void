@@ -17,11 +17,13 @@ export default class CLI extends Program {
 
     ready_pressToClose = false;
     queue_pressToClose = false;
-    queue_scrollToLastOnRefresh = false;
+    queue_snapToBottom = false;
+
+    scroll_target
 
     getFontSize() { return parseFloat(getComputedStyle(document.querySelector('.program')).fontSize) };
 
-    lastCommandBlockDivID = 0;
+    autoScrollTargetDivID = 0;
 
     themeStyle = "cliTheme";
 
@@ -45,21 +47,13 @@ export default class CLI extends Program {
         this.blocks.length = 0;
     }
 
-    async refresh() {
-        super.refresh();
-        if (this.queue_scrollToLastOnRefresh) {
-            await this.scrollOutputToLastDiv();
-        }
-    }
-
-    print(markup, refresh = true, allowAutoScroll = true) {
+    print(markup, refresh = true, autoScrollTarget = true) {
         const id = uuidv4();
         const block = <div id={id} className='commandBlock'> {markup} </div>
         this.blocks.push(block);
 
-        if (allowAutoScroll) {
-            this.lastCommandBlockDivID = id;
-            this.queue_scrollToLastOnRefresh = true;
+        if (autoScrollTarget) {
+            this.autoScrollTargetDivID = id;
         }
 
         if (refresh) {
@@ -143,25 +137,41 @@ export default class CLI extends Program {
         }
     }
 
-    async scrollOutputToLastDiv() {
-        this.queue_scrollToLastOnRefresh = false;
-        var lastTop = -1;
-        for (let i = 0; i < 60; i++) {
+    async autoScroll() {
+        var outputDiv = document.getElementById('output');
 
-            var outputDiv = document.getElementById('output');
-            var lastCommandDiv = document.getElementById(this.lastCommandBlockDivID);
+        //* If we have queued to just snap to the bottom, lets do that and get outa here
+        if (this.queue_snapToBottom) {
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+            this.queue_snapToBottom = false;
+            return;
+        }
 
-            if (lastTop != -1 && outputDiv.scrollTop !== lastTop) {
-                console.log("SCROLL UPDATED FRAME " + i + " | before: " + lastTop + " | after: " + outputDiv.scrollTop);
+        const scrollTarget = document.getElementById(this.autoScrollTargetDivID).offsetTop - this.getFontSize();
+        var scrollTop;
+        updateScrollTop();
+        outputDiv.scrollTo({ top: scrollTop, behavior: 'smooth' });
+
+        //*We keep checking for some frames ahead in case the last div will expand (due to images or otherwise)
+        //*If there is an expansion, we'll scroll one more time then exit this function
+        for (var i = 0; i < 10; i++) {
+            let last_scrollTop = scrollTop;
+            updateScrollTop();
+
+            if (last_scrollTop != scrollTop) {
+                console.log("SCROLL UPDATED: frame " + i);
+                outputDiv.scrollTo({ top: scrollTop, behavior: 'smooth' });
                 break;
             }
 
-            lastTop = outputDiv.scrollTop;
-            if (lastCommandDiv != null)
-                outputDiv.scrollTop = lastCommandDiv.offsetTop - this.getFontSize();
-
-            //*Wait one frame!
             await new Promise(resolve => requestAnimationFrame(resolve));
+        }
+
+        //*Detect where we can scroll based off of our target and max scroll capability
+        function updateScrollTop() {
+            outputDiv = document.getElementById('output');
+            const bottomOut = outputDiv.scrollHeight - outputDiv.offsetHeight;
+            scrollTop = Math.min(bottomOut, scrollTarget);
         }
     }
 
@@ -175,7 +185,11 @@ export default class CLI extends Program {
     //     return `${size}px`;
     // }
 
-    draw() {
+    run() {
+        this.queue_snapToBottom = true;
+    }
+
+    preDrawStep() {
         if (!this.initialized)
             this.initialize();
 
@@ -184,6 +198,10 @@ export default class CLI extends Program {
             this.ready_pressToClose = true;
             this.print(<div className='response'>{this.pressToCloseMessage}</div>, false, false);
         }
+    }
+
+    draw() {
+        this.preDrawStep();
 
         return (
             <div className="cli">
@@ -197,5 +215,9 @@ export default class CLI extends Program {
                 <input type="text" id="input" autoFocus></input>
             </div>
         );
+    }
+
+    postRenderCallback() {
+        this.autoScroll();
     }
 }
