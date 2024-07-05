@@ -27,6 +27,9 @@ export default class CLI extends Program {
 
     themeStyle = "cliTheme";
 
+    cullMax_commandBlocks = 100;
+    cullMax_scrollHeight = 5000;
+
     constructor(interpreter) {
         super();
         this.interpreter = interpreter;
@@ -68,7 +71,6 @@ export default class CLI extends Program {
         var responseMarkup = <div className='response'>{response}</div>
 
         this.print(<>{commandMarkup}{responseMarkup}</>);
-
     }
 
     async sendCommand(command) {
@@ -175,15 +177,27 @@ export default class CLI extends Program {
         }
     }
 
-    // getOutputEndSpacing() {
-    //     var outputDiv = document.getElementById('output');
+    cullingTest() {
+        const outputDiv = document.getElementById('output');
 
-    //     if (!outputDiv)
-    //         return 0;
+        let cullCount = 0;
+        let scrollHeight = outputDiv.scrollHeight;
 
-    //     const size = outputDiv.offsetHeight - this.getFontSize();
-    //     return `${size}px`;
-    // }
+        while (scrollHeight > this.cullMax_scrollHeight) {
+            const elementHeight = document.getElementById(this.blocks[cullCount].props.id).offsetHeight;
+            scrollHeight -= elementHeight;
+            cullCount++;
+        }
+
+        while (this.blocks.length - cullCount > this.cullMax_commandBlocks) {
+            cullCount++;
+        }
+
+        if (cullCount > 0) {
+            this.blocks.splice(0, cullCount);
+            console.log("CULLED " + cullCount);
+        }
+    }
 
     run() {
         this.queue_snapToBottom = true;
@@ -209,15 +223,14 @@ export default class CLI extends Program {
                     {this.blocks.map(block => (
                         <React.Fragment key={block.props.id}>{block}</React.Fragment>
                     ))}
-
-                    {/* <div style={{ marginBlockEnd: this.getOutputEndSpacing() }}></div> */}
                 </div>
                 <input type="text" id="input" autoFocus></input>
             </div>
         );
     }
 
-    postRenderCallback() {
-        this.autoScroll();
+    async postRenderCallback() {
+        await this.autoScroll();
+        this.cullingTest();
     }
 }
