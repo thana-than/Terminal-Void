@@ -11,12 +11,17 @@ export default class CLI extends Program {
     commandHistory_maxSize = 50;
     blocks = [];
     commandRunning = false;
-    startMessage = <p>Welcome!<br></br></p>;
-    pressToCloseMessage = <p>Press any key to continue.</p>
+    startMessage = <>Welcome!</>;
+    pressToCloseMessage = <>Press any key to continue.</>
     initialized = false;
 
     ready_pressToClose = false;
     queue_pressToClose = false;
+    queue_scrollToLastOnRefresh = false;
+
+    getFontSize() { return parseFloat(getComputedStyle(document.querySelector('.program')).fontSize) };
+
+    lastCommandBlockDivID = 0;
 
     themeStyle = "cliTheme";
 
@@ -26,8 +31,8 @@ export default class CLI extends Program {
     }
 
     initialize() {
-        this.blocks.push({ key: uuidv4(), type: 'response', content: this.startMessage })
         this.initialized = true;
+        this.print(<div className='response'>{this.startMessage}</div>, false);
     }
 
     pressToClose(refreshImmediate = false) {
@@ -40,20 +45,36 @@ export default class CLI extends Program {
         this.blocks.length = 0;
     }
 
+    async refresh() {
+        super.refresh();
+        if (this.queue_scrollToLastOnRefresh) {
+            await this.scrollOutputToLastDiv();
+        }
+    }
+
+    print(markup, refresh = true, allowAutoScroll = true) {
+        const id = uuidv4();
+        const block = <div id={id} className='commandBlock'> {markup} </div>
+        this.blocks.push(block);
+
+        if (allowAutoScroll) {
+            this.lastCommandBlockDivID = id;
+            this.queue_scrollToLastOnRefresh = true;
+        }
+
+        if (refresh) {
+            this.refresh()
+        }
+    }
+
     printCommand(command, response) {
-        const commandId = uuidv4();
-        const responseId = uuidv4();
+        if (command) {
+            var commandMarkup = <div className='command'>&gt; {command}</div>
+        }
+        var responseMarkup = <div className='response'>{response}</div>
 
-        if (command)
-            this.blocks.push({ key: commandId, type: 'command', content: `> ${command}` });
+        this.print(<>{commandMarkup}{responseMarkup}</>);
 
-        this.blocks.push({ key: responseId, type: 'response', content: response });
-
-        //TODO this only kind of works and only if the command doesn't have an await.
-        //TODO find a way to ensure the update only occurs once it's ready
-        setTimeout(() => {
-            this.scrollOutputToBottom();
-        }, 0);
     }
 
     async sendCommand(command) {
@@ -74,9 +95,7 @@ export default class CLI extends Program {
         }
 
         this.printCommand(command, response);
-
         this.commandRunning = false;
-        this.refresh()
     }
 
     onKeyDown(event) {
@@ -124,10 +143,37 @@ export default class CLI extends Program {
         }
     }
 
-    scrollOutputToBottom() {
-        const outputDiv = document.getElementById('output');
-        outputDiv.scrollTop = outputDiv.scrollHeight;
+    async scrollOutputToLastDiv() {
+        this.queue_scrollToLastOnRefresh = false;
+        var lastTop = -1;
+        for (let i = 0; i < 60; i++) {
+
+            var outputDiv = document.getElementById('output');
+            var lastCommandDiv = document.getElementById(this.lastCommandBlockDivID);
+
+            if (lastTop != -1 && outputDiv.scrollTop !== lastTop) {
+                console.log("SCROLL UPDATED FRAME " + i + " | before: " + lastTop + " | after: " + outputDiv.scrollTop);
+                break;
+            }
+
+            lastTop = outputDiv.scrollTop;
+            if (lastCommandDiv != null)
+                outputDiv.scrollTop = lastCommandDiv.offsetTop - this.getFontSize();
+
+            //*Wait one frame!
+            await new Promise(resolve => requestAnimationFrame(resolve));
+        }
     }
+
+    // getOutputEndSpacing() {
+    //     var outputDiv = document.getElementById('output');
+
+    //     if (!outputDiv)
+    //         return 0;
+
+    //     const size = outputDiv.offsetHeight - this.getFontSize();
+    //     return `${size}px`;
+    // }
 
     draw() {
         if (!this.initialized)
@@ -136,17 +182,17 @@ export default class CLI extends Program {
         if (this.queue_pressToClose) {
             this.queue_pressToClose = false;
             this.ready_pressToClose = true;
-            this.blocks.push({ key: uuidv4(), type: 'response', content: this.pressToCloseMessage })
+            this.print(<div className='response'>{this.pressToCloseMessage}</div>, false, false);
         }
 
         return (
             <div className="cli">
                 <div id="output">
                     {this.blocks.map(block => (
-                        <React.Fragment key={block.key}>
-                            <div className={block.type}>{block.content}</div>
-                        </React.Fragment>
+                        <React.Fragment key={block.props.id}>{block}</React.Fragment>
                     ))}
+
+                    {/* <div style={{ marginBlockEnd: this.getOutputEndSpacing() }}></div> */}
                 </div>
                 <input type="text" id="input" autoFocus></input>
             </div>

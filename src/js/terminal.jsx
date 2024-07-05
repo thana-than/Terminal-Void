@@ -34,11 +34,11 @@ const RUN = {
             </>
         );
     },
-    invoke: function (params) {
+    invoke: async function (params) {
         if (params.length != 1)
             return "run command takes 1 parameter (path)";
 
-        return Directory.run(params[0]);
+        return await Directory.run(params[0]);
     }
 }
 
@@ -149,12 +149,12 @@ const EXAMINE = {
     }
 };
 
-function smartCommand(command, context) {
+async function smartCommand(command, context) {
     let node = Directory.get(command)
     if (node) //* Start by seeing if we can navigate a directory
     {
         if (node.isFile)
-            return Directory.runNode(node); //* Run if file
+            return await Directory.runNode(node); //* Run if file
         else
             return Directory.cdNode(node); //* Nav if folder
     }
@@ -169,4 +169,5 @@ const interpreter = new Interpreter(
 
 const Terminal = new CLI(interpreter);
 Terminal.themeStyle = "terminalTheme";
+Terminal.startMessage = <>Welcome!<br></br>Type help to begin.</>;
 export default Terminal;

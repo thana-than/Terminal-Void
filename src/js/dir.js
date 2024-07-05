@@ -19,12 +19,12 @@ class Directory {
         return node.path();
     }
 
-    static run(path) {
+    static async run(path) {
         let node = Directory.get(path)
         if (!node) return `File '${path}' does not exist.`;
         if (!node.isFile) return `Path '${path}' is a directory, not a file.`;
 
-        return Directory.runNode(node);
+        return await Directory.runNode(node);
     }
 
     static examine(path) {
@@ -35,8 +35,8 @@ class Directory {
         return FileHandle.examine(node);
     }
 
-    static runNode(node) {
-        return FileHandle.open(node);
+    static async runNode(node) {
+        return await FileHandle.open(node);
     }
 
     static get(path) {

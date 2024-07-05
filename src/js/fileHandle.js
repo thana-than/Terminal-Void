@@ -60,7 +60,7 @@ async function load(hash) {
     const importComponent = gameFiles[hash];
 
     if (importComponent) {
-        return importComponent()
+        const result = await importComponent()
             .then((module) => {
                 return module.default || module;
             })
@@ -68,6 +68,7 @@ async function load(hash) {
                 console.error(`Error loading file with hash ${hash}:`, error);
                 throw error;
             });
+        return result;
     } else {
         console.error(`File with hash: ${hash} not found`);
         return Promise.reject(new Error(`File with hash: ${hash} not found`));
