@@ -14,9 +14,9 @@ export const CD = {
         return (
             <>
                 {this.help}
-                <div className='subtext'>Required Parameter: Folder path</div>
-                <div className='tip'>Entering "goto BACK" will bring you up one folder</div>
-                <div className='tip'>TIP! Entering a folder path without this command will still work.</div>
+                <div className='subtext'>Required Parameter: 🗀 Folder path</div>
+                <div className='tip'>Entering "goto BACK" will bring you up one 🗀 Folder</div>
+                <div className='tip'>TIP! Entering a 🗀 Folder path without this command will still work.</div>
             </>
         );
     },
@@ -29,26 +29,26 @@ export const CD = {
         const newDir = Directory.cd(dirParam);
         const node = Directory.get(newDir);
         if (node && node.isFolder)
-            return <>{newDir}:{LIST.invoke()}</>;
+            return <>⬎ {newDir}:{LIST.invoke()}</>;
         return newDir;
     }
 }
 
 export const RUN = {
     keys: ['run', 'r', 'open', 'o'],
-    help: "Runs the file at the given path",
+    help: "Runs the 🗎 File at the given path",
     verboseHelp: function () {
         return (
             <>
                 {this.help}
-                <div className='subtext'>Required Parameter: File path</div>
-                <div className='tip'>TIP! Entering a file path without this command will still work.</div>
+                <div className='subtext'>Required Parameter: 🗎 File path</div>
+                <div className='tip'>TIP! Entering a 🗎 File path without this command will still work.</div>
             </>
         );
     },
     invoke: async function (params) {
         if (params.length != 1)
-            return "run command takes 1 parameter (folder path)";
+            return "run command takes 1 parameter (🗀 Folder path)";
 
         return await Directory.run(params[0]);
     }
@@ -56,53 +56,79 @@ export const RUN = {
 
 export const LIST = {
     keys: ['list', 'ls'],
-    help: "Lists the files in the current folder",
+    help: "Lists the 🗎 Files in the current 🗀 Folder",
     verboseHelp: function () {
         return (
             <>
-                Lists the files in the given folder
-                <div className='subtext'>Entering "list" alone will use the current folder</div>
-                <div className='subtext'>Optional Parameters: Folder paths</div>
+                Lists the 🗎 Files in the given 🗀 Folder
+                <div className='subtext'>Entering "list" alone will use the current 🗀 Folder</div>
+                <div className='subtext'>Optional Parameters: 🗀 Folder paths</div>
             </>
         );
     },
     invoke: function (params) {
         if (!params || params.length == 0)
-            return str(ls(Directory.current));
+            params = ['./']
 
-        let contents = [];
+        const contents = [];
         params.forEach(path => {
             const n = Directory.get(path);
             if (n && !n.isFile) {
-                contents.push(`${n.fullName}:`)
-                contents.push(...ls(n));
+                contents.push(listBlock(n));
             }
             else {
-                contents.push(`Path '${path}' is not a folder.`);
+                contents.push(<div>Path '{path}' is not a 🗀 Folder.</div>);
             }
         });
 
-        return str(contents);
+        console.log(contents);
+        return contents.map((c, index) => {
+            const spacing = index < contents.length - 1 ? <br></br> : <></>;
+            return <div key={uuidv4()}>{c}
+                {spacing}</div>
+        });
 
-        function str(contents) {
-            return contents.map(node => {
-                if (typeof node === 'string')
-                    return node;
+        // return str(contents);
 
-                let icon = '🗀';
-                if (node.isFile)
-                    icon = '🗎';
-
-                return <div key={uuidv4()}>{icon} {node.fullName}</div>
-            });
-        }
-
-        function ls(node) {
-            const arr = Array.from(node.children.values());
+        function listBlock(dirNode) {
+            const arr = Array.from(dirNode.children.values());
             arr.sort((a, b) => { return a.isFile - b.isFile; });
 
-            return arr;
+            return (
+                <div>
+                    ⬎ {dirNode.path()}:
+                    <ul className='directoryList'>
+                        {arr.map(node => {
+                            const icon = node.isFile ? <>🗎</> : <>🗀</>;
+                            return (<li key={uuidv4()}>
+                                <span>{icon}</span>
+                                {node.fullName}
+                            </li>);
+                        })}
+                    </ul>
+                </div>
+            );
         }
+
+        // function str(contents) {
+        //     return contents.map(node => {
+        //         if (typeof node === 'string')
+        //             return <div key={uuidv4()}>{node}</div>;
+
+        //         let icon = '• 🗀';
+        //         if (node.isFile)
+        //             icon = '•  🗎';
+
+        //         return <div key={uuidv4()}>{icon} {node.fullName}</div>
+        //     });
+        // }
+
+        // function ls(node) {
+        //     const arr = Array.from(node.children.values());
+        //     arr.sort((a, b) => { return a.isFile - b.isFile; });
+
+        //     return arr;
+        // }
     }
 };
 
@@ -187,7 +213,7 @@ export const HELP = {
 
 export const EXAMINE = {
     keys: ['examine', 'ex'],
-    help: "Examines the target file or folder",
+    help: "Examines the target 🗎 File or 🗀 Folder",
     invoke: function (params, context) {
         if (params.length != 1)
             return "examine command takes 1 parameter (path)";

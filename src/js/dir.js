@@ -12,7 +12,7 @@ class Directory {
     static cd(path) {
         let n = Directory.get(path)
         if (!n) return `Directory '${path}' does not exist.`;
-        if (n.isFile) return `Path  '${path}' is a file, not a directory.`;
+        if (n.isFile) return `Path  '${path}' is a 🗎 File, not a 🗀 Folder.`;
 
         return this.cdNode(n);
     }
@@ -24,8 +24,8 @@ class Directory {
 
     static async run(path) {
         let node = Directory.get(path)
-        if (!node) return `File '${path}' does not exist.`;
-        if (!node.isFile) return `Path '${path}' is a folder, not a file.`;
+        if (!node) return `🗎 File '${path}' does not exist.`;
+        if (!node.isFile) return `Path '${path}' is a 🗀 Folder, not a 🗎 File.`;
 
         return await Directory.runNode(node);
     }
@@ -33,7 +33,7 @@ class Directory {
     static examine(path) {
         let node = Directory.get(path)
         if (!node) return `'${path}' does not exist.`;
-        if (!node.isFile) return 'A folder.';
+        if (!node.isFile) return 'A 🗀 Folder.';
 
         return FileHandle.examine(node);
     }
@@ -54,7 +54,7 @@ class Directory {
             currentNode = this.root;
             path = path.replace(rootMatch[1], "");
         }
-        console.log(currentNode);
+
         //* Splits the path up so we can work through each part
         const pathArray = path.split(REGEX_SLASH)
         const len = pathArray.length;
