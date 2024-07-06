@@ -14,9 +14,9 @@ export const CD = {
         return (
             <>
                 {this.help}
-                <div className='subtext'>Required Parameter: Folder path</div>
-                <div className='tip'>Entering "goto BACK" will bring you up one folder</div>
-                <div className='tip'>TIP! Entering a folder path without this command will still work.</div>
+                <div className='subtext'>Required Parameter: 🗀 Folder path</div>
+                <div className='tip'>Entering "goto BACK" will bring you up one 🗀 Folder</div>
+                <div className='tip'>TIP! Entering a 🗀 Folder path without this command will still work.</div>
             </>
         );
     },
@@ -29,26 +29,26 @@ export const CD = {
         const newDir = Directory.cd(dirParam);
         const node = Directory.get(newDir);
         if (node && node.isFolder)
-            return <>{newDir}:{LIST.invoke()}</>;
+            return <>⬎ {newDir}:{LIST.invoke()}</>;
         return newDir;
     }
 }
 
 export const RUN = {
     keys: ['run', 'r', 'open', 'o'],
-    help: "Runs the file at the given path",
+    help: "Runs the 🗎 File at the given path",
     verboseHelp: function () {
         return (
             <>
                 {this.help}
-                <div className='subtext'>Required Parameter: File path</div>
-                <div className='tip'>TIP! Entering a file path without this command will still work.</div>
+                <div className='subtext'>Required Parameter: 🗎 File path</div>
+                <div className='tip'>TIP! Entering a 🗎 File path without this command will still work.</div>
             </>
         );
     },
     invoke: async function (params) {
         if (params.length != 1)
-            return "run command takes 1 parameter (folder path)";
+            return "run command takes 1 parameter (🗀 Folder path)";
 
         return await Directory.run(params[0]);
     }
@@ -56,29 +56,29 @@ export const RUN = {
 
 export const LIST = {
     keys: ['list', 'ls'],
-    help: "Lists the files in the current folder",
+    help: "Lists the 🗎 Files in the current 🗀 Folder",
     verboseHelp: function () {
         return (
             <>
-                Lists the files in the given folder
-                <div className='subtext'>Entering "list" alone will use the current folder</div>
-                <div className='subtext'>Optional Parameters: Folder paths</div>
+                Lists the 🗎 Files in the given 🗀 Folder
+                <div className='subtext'>Entering "list" alone will use the current 🗀 Folder</div>
+                <div className='subtext'>Optional Parameters: 🗀 Folder paths</div>
             </>
         );
     },
     invoke: function (params) {
         if (!params || params.length == 0)
-            return str(ls(Directory.current));
+            params = ['./']
 
-        let contents = [];
+        const contents = [];
         params.forEach(path => {
             const n = Directory.get(path);
             if (n && !n.isFile) {
-                contents.push(`${n.fullName}:`)
+                contents.push(`⬎ ${n.path()}:`)
                 contents.push(...ls(n));
             }
             else {
-                contents.push(`Path '${path}' is not a folder.`);
+                contents.push(`Path '${path}' is not a 🗀 Folder.`);
             }
         });
 
@@ -89,9 +89,9 @@ export const LIST = {
                 if (typeof node === 'string')
                     return node;
 
-                let icon = '🗀';
+                let icon = '• 🗀';
                 if (node.isFile)
-                    icon = '🗎';
+                    icon = '•  🗎';
 
                 return <div key={uuidv4()}>{icon} {node.fullName}</div>
             });
@@ -187,7 +187,7 @@ export const HELP = {
 
 export const EXAMINE = {
     keys: ['examine', 'ex'],
-    help: "Examines the target file or folder",
+    help: "Examines the target 🗎 File or 🗀 Folder",
     invoke: function (params, context) {
         if (params.length != 1)
             return "examine command takes 1 parameter (path)";
