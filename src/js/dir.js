@@ -46,6 +46,9 @@ class Directory {
         //* If the path starts with a slash, we start at root. If not, this is a local path
         let currentNode = this.current;
 
+        if (path == null)
+            path = './';
+
         const rootMatch = path.match(REGEX_ROOT);
         if (rootMatch) {
             currentNode = this.root;
