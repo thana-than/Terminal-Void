@@ -4,6 +4,19 @@ html body {
     overflow: hidden;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ul,
+ol {
+    margin-block-start: 0;
+    margin-block-end: 0;
+}
+
 #programTheme {
     --primary-color: #fff;
     --secondary-color: #ff0;
@@ -29,6 +42,25 @@ img {
 .commandBlock {
     margin-block-end: 1em;
     animation: fadeIn .2s;
+}
+
+.directoryList ul {
+    list-style-type: none;
+    padding: 0;
+    padding-inline-start: 0px;
+}
+
+.directoryList li {
+    align-items: center;
+    display: flex;
+    margin-left: 0;
+}
+
+.directoryList span {
+    width: 1em;
+    margin-right: 10px;
+    display: inline-block;
+    text-align: center;
 }
 
 @keyframes fadeIn {

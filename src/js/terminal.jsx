@@ -74,35 +74,61 @@ export const LIST = {
         params.forEach(path => {
             const n = Directory.get(path);
             if (n && !n.isFile) {
-                contents.push(`⬎ ${n.path()}:`)
-                contents.push(...ls(n));
+                contents.push(listBlock(n));
             }
             else {
-                contents.push(`Path '${path}' is not a 🗀 Folder.`);
+                contents.push(<div>Path '{path}' is not a 🗀 Folder.</div>);
             }
         });
 
-        return str(contents);
+        console.log(contents);
+        return contents.map((c, index) => {
+            const spacing = index < contents.length - 1 ? <br></br> : <></>;
+            return <div key={uuidv4()}>{c}
+                {spacing}</div>
+        });
 
-        function str(contents) {
-            return contents.map(node => {
-                if (typeof node === 'string')
-                    return node;
+        // return str(contents);
 
-                let icon = '• 🗀';
-                if (node.isFile)
-                    icon = '•  🗎';
-
-                return <div key={uuidv4()}>{icon} {node.fullName}</div>
-            });
-        }
-
-        function ls(node) {
-            const arr = Array.from(node.children.values());
+        function listBlock(dirNode) {
+            const arr = Array.from(dirNode.children.values());
             arr.sort((a, b) => { return a.isFile - b.isFile; });
 
-            return arr;
+            return (
+                <div>
+                    ⬎ {dirNode.path()}:
+                    <ul className='directoryList'>
+                        {arr.map(node => {
+                            const icon = node.isFile ? <>🗎</> : <>🗀</>;
+                            return (<li key={uuidv4()}>
+                                <span>{icon}</span>
+                                {node.fullName}
+                            </li>);
+                        })}
+                    </ul>
+                </div>
+            );
         }
+
+        // function str(contents) {
+        //     return contents.map(node => {
+        //         if (typeof node === 'string')
+        //             return <div key={uuidv4()}>{node}</div>;
+
+        //         let icon = '• 🗀';
+        //         if (node.isFile)
+        //             icon = '•  🗎';
+
+        //         return <div key={uuidv4()}>{icon} {node.fullName}</div>
+        //     });
+        // }
+
+        // function ls(node) {
+        //     const arr = Array.from(node.children.values());
+        //     arr.sort((a, b) => { return a.isFile - b.isFile; });
+
+        //     return arr;
+        // }
     }
 };
 
