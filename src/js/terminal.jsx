@@ -5,7 +5,7 @@ import { Directory } from './dir.js';
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-const CD = {
+export const CD = {
     keys: ['goto', 'go', 'cd'],
     help: "Navigate to the folder at the given path",
     accessKey: 'CLIENT',
@@ -21,10 +21,12 @@ const CD = {
         );
     },
     invoke: function (params) {
-        if (params.length != 1)
+        if (params && params.length > 1)
             return "cd command takes 1 parameter (path)";
 
-        const newDir = Directory.cd(params[0]);
+        const dirParam = (params) ? params[0] : './';
+
+        const newDir = Directory.cd(dirParam);
         const node = Directory.get(newDir);
         if (node && node.isFolder)
             return <>{newDir}:{LIST.invoke()}</>;
@@ -32,7 +34,7 @@ const CD = {
     }
 }
 
-const RUN = {
+export const RUN = {
     keys: ['run', 'r', 'open', 'o'],
     help: "Runs the file at the given path",
     verboseHelp: function () {
@@ -52,7 +54,7 @@ const RUN = {
     }
 }
 
-const LIST = {
+export const LIST = {
     keys: ['list', 'ls'],
     help: "Lists the files in the current folder",
     verboseHelp: function () {
@@ -104,7 +106,7 @@ const LIST = {
     }
 };
 
-const CLEAR = {
+export const CLEAR = {
     keys: ['clear', 'cls'],
     help: "Clears the terminal screen",
     verboseHelp: function () {
@@ -136,7 +138,7 @@ const CLEAR = {
     }
 };
 
-const HELP = {
+export const HELP = {
     keys: ['help', 'h'],
     help: <>Enter "help &#40;command_name&#41;" for more info.</>,
     verboseHelp: function () {
@@ -183,7 +185,7 @@ const HELP = {
     }
 }
 
-const EXAMINE = {
+export const EXAMINE = {
     keys: ['examine', 'ex'],
     help: "Examines the target file or folder",
     invoke: function (params, context) {
