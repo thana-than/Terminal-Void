@@ -108,26 +108,6 @@ export const LIST = {
                 </div>
             );
         }
-
-        // function str(contents) {
-        //     return contents.map(node => {
-        //         if (typeof node === 'string')
-        //             return <div key={uuidv4()}>{node}</div>;
-
-        //         let icon = '• 🗀';
-        //         if (node.isFile)
-        //             icon = '•  🗎';
-
-        //         return <div key={uuidv4()}>{icon} {node.fullName}</div>
-        //     });
-        // }
-
-        // function ls(node) {
-        //     const arr = Array.from(node.children.values());
-        //     arr.sort((a, b) => { return a.isFile - b.isFile; });
-
-        //     return arr;
-        // }
     }
 };
 

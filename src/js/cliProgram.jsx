@@ -182,7 +182,7 @@ export default class CLI extends Program {
 
         //*We keep checking for some frames ahead in case the last div will expand (due to images or otherwise)
         //*If there is an expansion, we'll scroll one more time then exit this function
-        for (var i = 0; i < 30; i++) {
+        for (var i = 0; i < 60; i++) {
             let last_scrollTop = scrollTop;
             updateScrollTop();
 
