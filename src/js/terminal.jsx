@@ -81,7 +81,6 @@ export const LIST = {
             }
         });
 
-        console.log(contents);
         return contents.map((c, index) => {
             const spacing = index < contents.length - 1 ? <br></br> : <></>;
             return <div key={uuidv4()}>{c}
