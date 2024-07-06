@@ -29,7 +29,7 @@ export const CD = {
         const newDir = Directory.cd(dirParam);
         const node = Directory.get(newDir);
         if (node && node.isFolder)
-            return <>⬎ {newDir}:{LIST.invoke()}</>;
+            return <>{LIST.invoke()}</>;
         return newDir;
     }
 }
