@@ -29,7 +29,7 @@ export const CD = {
         const newDir = Directory.cd(dirParam);
         const node = Directory.get(newDir);
         if (node && node.isFolder)
-            return <>⬎ {newDir}:{LIST.invoke()}</>;
+            return <>{LIST.invoke()}</>;
         return newDir;
     }
 }
@@ -81,7 +81,6 @@ export const LIST = {
             }
         });
 
-        console.log(contents);
         return contents.map((c, index) => {
             const spacing = index < contents.length - 1 ? <br></br> : <></>;
             return <div key={uuidv4()}>{c}
@@ -109,26 +108,6 @@ export const LIST = {
                 </div>
             );
         }
-
-        // function str(contents) {
-        //     return contents.map(node => {
-        //         if (typeof node === 'string')
-        //             return <div key={uuidv4()}>{node}</div>;
-
-        //         let icon = '• 🗀';
-        //         if (node.isFile)
-        //             icon = '•  🗎';
-
-        //         return <div key={uuidv4()}>{icon} {node.fullName}</div>
-        //     });
-        // }
-
-        // function ls(node) {
-        //     const arr = Array.from(node.children.values());
-        //     arr.sort((a, b) => { return a.isFile - b.isFile; });
-
-        //     return arr;
-        // }
     }
 };
 
