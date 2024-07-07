@@ -1,8 +1,10 @@
 import Data from './gameData'
+import React from "react";
+import { Key } from './icons';
 
 export default class UnlockKey {
-    msg_unlock = () => `PERMISSION GRANTED: Access 🗝 Key: ${this.key}`;
-    msg_alreadyUnlocked = () => `PERMISSION 🗝 KEY: ${this.key} already granted`;
+    msg_unlock = () => <>PERMISSION GRANTED: Access <Key />: {this.key}</>;
+    msg_alreadyUnlocked = () => <>PERMISSION <Key />: {this.key} already granted</>;
     msg_examine = "I should try running this...";
     msg_examine_alreadyUnlocked = "I've already run this program!";
 
