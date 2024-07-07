@@ -105,18 +105,24 @@ export default class CLI extends Program {
 
         //*Payload parsing
         let response = payload;
-        if (payload.ignorePrintCommand) {
-            command = null;
+        if (response != null) {
+            if (payload.ignorePrintCommand) {
+                command = null;
+            }
+
+            if (payload.ignorePrintResponse) {
+                response = null;
+            }
+            else if (payload.response) {
+                response = payload.response;
+            }
+
+            this.printCommand(command, response);
+        }
+        else {
+            //! If this happens it's because response crapped out! Right now we just don't do anything :/
         }
 
-        if (payload.ignorePrintResponse) {
-            response = null;
-        }
-        else if (payload.response) {
-            response = payload.response;
-        }
-
-        this.printCommand(command, response);
         this.commandRunning = false;
     }
 
