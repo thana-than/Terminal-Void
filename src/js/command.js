@@ -1,5 +1,5 @@
 import Data from "./gameData";
-const REGEX_SPACE = /\s+/ //TODO allow quotes to keep spaces
+const REGEX_COMMAND_SEPARATOR = /(?:"([^"]+)"|'([^']+)')|(\S+)/g //*Matches commands and parameters split between spaces and double or single quotes. quotes are removed when matching
 
 export default class Interpreter {
     commands = new Map();
@@ -49,14 +49,15 @@ export default class Interpreter {
             return false;
 
         //*If the command requires an accessKey but we don't have it, return null
-        if (commandObj.accessKey && !Data.accessKeys.has(commandObj.accessKey))
+        if (commandObj.accessKey && !Data.HasAccess(commandObj.accessKey))
             return false;
 
         return true;
     }
 
     async Run(command, context) {
-        const cmd = command.split(REGEX_SPACE); //*Splits / removes whitespace chunks
+        //*Still don't fully understand regex, but we want to map through match[1] [2] then [3] as they are the matches using double quotes, single quotes, and regular spacing respectively
+        const cmd = [...command.matchAll(REGEX_COMMAND_SEPARATOR)].map(match => match[1] || match[2] || match[3]);
         const params = cmd.slice(1);
 
         const requested = this.Get(cmd[0])

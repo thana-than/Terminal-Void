@@ -1,5 +1,5 @@
 import { gameFiles } from '../.generated/dynamicImports';
-import { Global } from './global.js'
+import Global from './global'
 import Program from "./program";
 import React from 'react';
 import { runProgram } from './OS.jsx';
