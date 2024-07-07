@@ -38,7 +38,7 @@ class Directory {
         const result = Directory.get(path)
         if (!result.node) return result.message; //* We don't check for success, just if we found a node at all. we should be allowed to examine a file or folder even if we don't have access
 
-        if (result.node.examine) return result.examine;
+        if (result.node.examine) { console.log("RESULT " + result.node.examine); return result.node.examine; }
 
         if (!result.node.isFile) return 'A 🗀 Folder.';
         return FileHandle.examine(result.node);
