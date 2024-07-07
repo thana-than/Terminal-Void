@@ -107,8 +107,21 @@ class Directory {
         //* Splits the path up so we can work through each part
         let payload = { success: false };
         const pathArray = path.split(REGEX_SLASH)
-        const len = pathArray.length;
 
+        //* Quick little check here to see if the user has input a location parented from this node, if so we jump back to there for our path
+        //* But only if the first node cannot be gathered via getChild!
+        if (!targetNode.getChild(pathArray[0])) {
+            const parents = targetNode.getParents();
+            for (let i = parents.length - 1; i >= 0; i--) {
+                if (pathArray[0] == parents[i].name) {
+                    targetNode = parents[i];
+                    pathArray.shift();
+                    break;
+                }
+            }
+        }
+
+        const len = pathArray.length;
         for (let i = 0; i < len; i++) {
             let next = pathArray[i];
 
@@ -126,18 +139,17 @@ class Directory {
                 nextNode = targetNode.getChild(next);
             }
 
-            //* If at any point we lose our node (or the node is a file), that means the path is invalid
-            if (!nextNode) {
-                payload.message = `'${path}' does not exist.`;
-                return payload;
-            }
-
             //* This check confirms that a file isn't used mid-path. Files are only allowed to be at the end of the path
             if (nextNode != targetNode && targetNode.isFile) {
-                payload.message = <>Path cannot navigate through a <File /></>;
+                payload.message = <>Path cannot navigate through a <File /> {targetNode.fullName}</>;
                 return payload;
             }
 
+            //* If at any point we lose our node, that means the path is invalid
+            if (!nextNode) {
+                payload.message = <>'{pathArray[i]}' does not exist in <Folder text='' /> {targetNode.name}.</>;
+                return payload;
+            }
 
             targetNode = nextNode
         }
