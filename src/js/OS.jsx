@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Terminal from "./terminal";
 import '../css/os.css'
+import '../css/fonts.css'
 
 let initialized = false;
 let baseTerminal;
