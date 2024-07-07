@@ -5,19 +5,20 @@ import { Directory } from './dir.js';
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Global from './global.js';
+import { Folder, File, Key } from './icons';
 
 export const CD = {
     keys: ['goto', 'go', 'cd'],
     help: "Navigate to the folder at the given path",
     accessKey: 'CLIENT',
-    accessFailed: "COMMAND ACCESS DENIED: Permission 🗝 Key Required: CLIENT",
+    accessFailed: <>COMMAND ACCESS DENIED: Permission <Key /> Required: CLIENT</>,
     verboseHelp: function () {
         return (
             <>
                 {this.help}
-                <div className='subtext'>Required Parameter: 🗀 Folder path</div>
-                <div className='tip'>Entering "goto BACK" will bring you up one 🗀 Folder</div>
-                <div className='tip'>TIP! Entering a 🗀 Folder path without this command will still work.</div>
+                <div className='subtext'>Required Parameter: <Folder /> path</div>
+                <div className='tip'>Entering "goto BACK" will bring you up one <Folder /></div>
+                <div className='tip'>TIP! Entering a <Folder /> path without this command will still work.</div>
             </>
         );
     },
@@ -28,28 +29,27 @@ export const CD = {
         const dirParam = (params) ? params[0] : './';
 
         const newDir = Directory.cd(dirParam);
-        const result = Directory.get(newDir);
-        if (result.node.isFolder)
+        if (newDir.success)
             return <>{LIST.invoke()}</>;
-        return newDir;
+        return newDir.message;
     }
 }
 
 export const RUN = {
     keys: ['run', 'r', 'open', 'o'],
-    help: "Runs the 🗎 File at the given path",
+    help: <>Runs the <File /> at the given path</>,
     verboseHelp: function () {
         return (
             <>
                 {this.help}
-                <div className='subtext'>Required Parameter: 🗎 File path</div>
-                <div className='tip'>TIP! Entering a 🗎 File path without this command will still work.</div>
+                <div className='subtext'>Required Parameter: <File /> path</div>
+                <div className='tip'>TIP! Entering a <File /> path without this command will still work.</div>
             </>
         );
     },
     invoke: async function (params) {
         if (params.length != 1)
-            return "run command takes 1 parameter (🗀 Folder path)";
+            return "run command takes 1 parameter (<Folder /> path)";
 
         return await Directory.run(params[0]);
     }
@@ -57,13 +57,13 @@ export const RUN = {
 
 export const LIST = {
     keys: ['list', 'ls'],
-    help: "Lists the 🗎 Files in the current 🗀 Folder",
+    help: <>Lists the <File />s in the current <Folder /></>,
     verboseHelp: function () {
         return (
             <>
-                Lists the 🗎 Files in the given 🗀 Folder
-                <div className='subtext'>Entering "list" alone will use the current 🗀 Folder</div>
-                <div className='subtext'>Optional Parameters: 🗀 Folder paths</div>
+                Lists the <File />s in the given <Folder />
+                <div className='subtext'>Entering "list" alone will use the current <Folder /></div>
+                <div className='subtext'>Optional Parameters: <Folder /> paths</div>
             </>
         );
     },
@@ -83,7 +83,7 @@ export const LIST = {
                 }
             }
             else {
-                contents.push(<div>Path '{path}' is not a 🗀 Folder.</div>);
+                contents.push(<div>Path '{path}' is not a <Folder />.</div>);
             }
         });
 
@@ -104,7 +104,7 @@ export const LIST = {
                     ⬎ {dirNode.path()}:
                     <ul className='directoryList'>
                         {arr.map(node => {
-                            const icon = node.isFile ? <>🗎</> : <>🗀</>;
+                            const icon = node.isFile ? <File text='' /> : <Folder text='' />;
                             return (<li key={uuidv4()}>
                                 <span>{icon}</span>
                                 {node.fullName}
@@ -198,7 +198,7 @@ export const HELP = {
 
 export const EXAMINE = {
     keys: ['examine', 'ex'],
-    help: "Examines the target 🗎 File or 🗀 Folder",
+    help: <>Examines the target <File /> or <Folder /></>,
     invoke: function (params, context) {
         if (params.length != 1)
             return "examine command takes 1 parameter (path)";

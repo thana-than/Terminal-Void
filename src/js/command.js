@@ -1,4 +1,5 @@
 import Data from "./gameData";
+import React from 'react';
 const REGEX_COMMAND_SEPARATOR = /(?:"([^"]+)"|'([^']+)')|(\S+)/g //*Matches commands and parameters split between spaces and double or single quotes. quotes are removed when matching
 
 export default class Interpreter {
@@ -69,7 +70,7 @@ export default class Interpreter {
 
             return `Command ${cmd[0]} does not exist!`;
         }
-        else if (typeof requested === 'string')
+        else if (typeof requested === 'string' || React.isValidElement(requested))
             return requested;
 
         const response = await requested.invoke(params, context);

@@ -1,10 +1,12 @@
 import { FileHandle } from './fileHandle.js';
 import Data from "./gameData";
+import React from "react";
 
 const REGEX_SLASH = /[\\/]/;
 const REGEX_ROOT = /^(\s*(?:root|\/|\\))/i;
 const ROOT_NAME = 'ROOT';
 const START_DIR = '/instance/'
+import { File, Folder, Key } from './icons';
 
 class Directory {
     static root;
@@ -14,11 +16,17 @@ class Directory {
         const result = Directory.get(path)
 
         if (!forceUnsafe) {
-            if (!result.success) return result.message;
-            if (result.node.isFile) return `Path  '${path}' is a 🗎 File, not a 🗀 Folder.`;
+            if (!result.success) return result;
+
+            if (result.node.isFile) {
+                result.success = false;
+                result.message = <>Path '{path}' is a <File />, not a <Folder />.</>;
+                return result;
+            }
         }
 
-        return this.cdNode(result.node);
+        this.cdNode(result.node);
+        return result;
     }
 
     static cdNode(node) {
@@ -29,7 +37,7 @@ class Directory {
     static async run(path) {
         const result = Directory.get(path)
         if (!result.success) return result.message;
-        if (!result.node.isFile) return `Path '${path}' is a 🗀 Folder, not a 🗎 File.`;
+        if (!result.node.isFile) return <>Path '{path}' is a <Folder />, not a <File />.</>;
 
         return await Directory.runNode(result.node);
     }
@@ -40,7 +48,7 @@ class Directory {
 
         if (result.node.examine) { console.log("RESULT " + result.node.examine); return result.node.examine; }
 
-        if (!result.node.isFile) return 'A 🗀 Folder.';
+        if (!result.node.isFile) return <>A <Folder />.</>;
         return FileHandle.examine(result.node);
     }
 
@@ -126,7 +134,7 @@ class Directory {
 
             //* This check confirms that a file isn't used mid-path. Files are only allowed to be at the end of the path
             if (nextNode != targetNode && targetNode.isFile) {
-                payload.message = `Path '${path}' cannot navigate through a 🗎 File`;
+                payload.message = <>Path cannot navigate through a <File /></>;
                 return payload;
             }
 
@@ -141,8 +149,8 @@ class Directory {
             if (travelResult.message)
                 payload.message = travelResult.message;
             else {
-                const label = targetNode.isFile ? `🗎 FILE` : `🗀 FOLDER`;
-                payload.message = `${label} ACCESS DENIED, Permission 🗝 Key Required: ${travelResult.failedKey}`;
+                const label = targetNode.isFile ? <File text='' /> : <Folder text='' />;
+                payload.message = <>{label} ACCESS DENIED, Permission <Key /> Required: {travelResult.failedKey}</>;
             }
 
             return payload;

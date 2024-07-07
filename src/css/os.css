@@ -1,5 +1,5 @@
-html body {
-    font-family: monospace;
+html,
+body {
     background: #000;
     overflow: hidden;
 }
@@ -126,11 +126,22 @@ img {
     border-color: var(--secondary-color);
 }
 
+html,
+body,
 .program,
 .program input,
 .program #output {
-    font-family: monospace;
+    font-family: "Share Tech Mono", monospace;
     font-size: 18px;
+}
+
+.material-symbols-sharp {
+    vertical-align: bottom;
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 200,
+        'GRAD' 0,
+        'opsz' 24
 }
 
 .cli {
