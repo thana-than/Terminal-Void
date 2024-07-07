@@ -5,7 +5,7 @@ import { CD } from "/src/js/terminal"
 const Unlock = new UnlockKey('CLIENT');
 //* Can put alternate messages here before exporting (string or function allowed):
 Unlock.msg_unlock = () => <>
-    <div className="head"><span>PERMISSION GRANTED:</span> ACCESS LEVEL: {Unlock.key}</div>
+    <div className="head"><span>PERMISSION GRANTED:</span> ACCESS 🗝 KEY: {Unlock.key}</div>
     <div className="text">New Command Unlocked: GOTO. Help command list expanded.</div>
     <div className="tip">Enter "help goto" for specific details on the goto command.</div><br></br>
     <div>{CD.invoke()}</div>

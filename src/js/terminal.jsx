@@ -9,7 +9,7 @@ export const CD = {
     keys: ['goto', 'go', 'cd'],
     help: "Navigate to the folder at the given path",
     accessKey: 'CLIENT',
-    accessFailed: "ACCESS DENIED: Permission level required: CLIENT",
+    accessFailed: "COMMAND ACCESS DENIED: Permission 🗝 Key Required: CLIENT",
     verboseHelp: function () {
         return (
             <>
@@ -28,7 +28,7 @@ export const CD = {
 
         const newDir = Directory.cd(dirParam);
         const node = Directory.get(newDir);
-        if (node && node.isFolder)
+        if (node.isFolder)
             return <>{LIST.invoke()}</>;
         return newDir;
     }
@@ -72,9 +72,15 @@ export const LIST = {
 
         const contents = [];
         params.forEach(path => {
-            const n = Directory.get(path);
-            if (n && !n.isFile) {
-                contents.push(listBlock(n));
+            const result = Directory.get(path);
+            if (result.node && !result.isFile) {
+                if (result.success) {
+                    contents.push(listBlock(result.node));
+                }
+                else {
+                    console.log("HEYY");
+                    return result.message;
+                }
             }
             else {
                 contents.push(<div>Path '{path}' is not a 🗀 Folder.</div>);
@@ -201,10 +207,14 @@ export const EXAMINE = {
 };
 
 async function smartCommand(command, context) {
-    let node = Directory.get(command)
-    if (node) //* Start by seeing if we can navigate a directory
+    let result = Directory.get(command)
+    if (result.node) //* Start by seeing if the command is a path to a directory
     {
-        if (node.isFile) {
+        //* We don't check success until after the node is identified so that we can keep the messages related to the context of the users intent (navigation)
+        if (!result.success)
+            return result.message;
+
+        if (result.node.isFile) {
             //* Run if file
             return await context.interpreter.Run(`run ${command}`, context);
         }

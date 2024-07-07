@@ -1,8 +1,8 @@
 import Data from './gameData'
 
 export default class UnlockKey {
-    msg_unlock = () => `PERMISSION GRANTED: Access level: ${this.key}`;
-    msg_alreadyUnlocked = () => `PERMISSION LEVEL: ${this.key} already granted`;
+    msg_unlock = () => `PERMISSION GRANTED: Access 🗝 Key: ${this.key}`;
+    msg_alreadyUnlocked = () => `PERMISSION 🗝 KEY: ${this.key} already granted`;
     msg_examine = "I should try running this...";
     msg_examine_alreadyUnlocked = "I've already run this program!";
 
