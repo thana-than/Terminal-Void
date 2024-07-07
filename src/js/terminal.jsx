@@ -28,8 +28,8 @@ export const CD = {
         const dirParam = (params) ? params[0] : './';
 
         const newDir = Directory.cd(dirParam);
-        const node = Directory.get(newDir);
-        if (node.isFolder)
+        const result = Directory.get(newDir);
+        if (result.node.isFolder)
             return <>{LIST.invoke()}</>;
         return newDir;
     }
@@ -74,12 +74,11 @@ export const LIST = {
         const contents = [];
         params.forEach(path => {
             const result = Directory.get(path);
-            if (result.node && !result.isFile) {
+            if (result.node && !result.node.isFile) {
                 if (result.success) {
                     contents.push(listBlock(result.node));
                 }
                 else {
-                    console.log("HEYY");
                     return result.message;
                 }
             }
@@ -208,7 +207,7 @@ export const EXAMINE = {
 };
 
 async function smartCommand(command, context) {
-    let result = Directory.get(command)
+    const result = Directory.get(command)
     if (result.node) //* Start by seeing if the command is a path to a directory
     {
         //* We don't check success until after the node is identified so that we can keep the messages related to the context of the users intent (navigation)
