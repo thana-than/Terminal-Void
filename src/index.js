@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import OS from './js/OS.jsx';
-import { Global } from './js/global.js';
+import Global from './js/global';
 
 Global.initialize();
 

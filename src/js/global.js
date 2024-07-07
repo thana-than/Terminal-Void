@@ -2,8 +2,9 @@
 import json from '../.generated/fileStructure.json';
 import { Directory } from './dir.js';
 
-class Global {
+export default class Global {
     static build
+    static GOD_MODE = process.env.GODMODE === 'true';
 
     static initialize() {
         //*Get build type
@@ -19,5 +20,3 @@ class Global {
             console.log(logText)
     }
 }
-
-export { Global }

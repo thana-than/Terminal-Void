@@ -11,7 +11,7 @@ export default class UnlockKey {
     }
 
     run() {
-        if (Data.accessKeys.has(this.key))
+        if (Data.accessKeys.has(this.key)) //* We do a raw key check instead of HasAccess here
             return returnMsg(this.msg_alreadyUnlocked);
 
         Data.accessKeys.add(this.key);

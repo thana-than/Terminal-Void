@@ -4,6 +4,7 @@ import CLI from "./cliProgram";
 import { Directory } from './dir.js';
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import Global from './global.js';
 
 export const CD = {
     keys: ['goto', 'go', 'cd'],
@@ -234,5 +235,13 @@ const interpreter = new Interpreter(
 
 const Terminal = new CLI(interpreter);
 Terminal.themeStyle = "terminalTheme";
-Terminal.startMessage = <>Welcome!<br></br>Enter "help" to view available commands.</>;
+
+if (Global.GOD_MODE)
+    var godModeMessage = <div>God mode activated.</div>
+
+Terminal.startMessage = (<>
+    Welcome!<br></br>
+    Enter "help" to view available commands.
+    {godModeMessage}
+</>);
 export default Terminal;

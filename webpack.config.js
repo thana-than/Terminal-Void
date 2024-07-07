@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
@@ -73,6 +74,9 @@ module.exports = {
         }
     },
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env.GODMODE': JSON.stringify(process.env.GODMODE)
+        }),
         new HtmlWebpackPlugin({
             template: './src/index.html',
         }),

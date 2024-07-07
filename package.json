@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "start": "python build_gameFolders.py --dev && npm-run-all --parallel watch:webpack watch:server watch:browser",
+    "godmode": "cross-env GODMODE=true npm start",
     "dev": "python build_gameFolders.py --dev && webpack --mode=development",
     "build": "python build_gameFolders.py && webpack --mode=production",
     "watch:webpack": "webpack --mode=development --watch",
@@ -21,6 +22,7 @@
     "babel-loader": "^9.1.3",
     "browser-sync": "^3.0.2",
     "copy-webpack-plugin": "^12.0.2",
+    "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.6.0",
