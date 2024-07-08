@@ -105,7 +105,7 @@ export const LIST = {
                     <ul className='directoryList'>
                         {arr.map(node => {
                             const icon = node.isFile ? <File text='' /> : <Folder text='' />;
-                            return (<li key={uuidv4()}>
+                            return (<li className={node.getClassName()} key={uuidv4()}>
                                 <span>{icon}</span>
                                 {node.fullName}
                             </li>);
