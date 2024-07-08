@@ -49,7 +49,7 @@ export const RUN = {
     },
     invoke: async function (params) {
         if (params.length != 1)
-            return "run command takes 1 parameter (<Folder /> path)";
+            return <>run command takes 1 parameter (<File /> path)</>;
 
         return await Directory.run(params[0]);
     }
