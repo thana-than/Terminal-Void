@@ -2,6 +2,8 @@ import '../css/os.css'
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Program from "./program";
+import inputFilter from './autocomplete';
+import { Directory } from './dir';
 
 function isWhitespaceString(str) { return !/\S/.test(str); }
 
@@ -171,6 +173,25 @@ export default class CLI extends Program {
         }
     }
 
+    onInputChanged = (event) => {
+        const text = event.target.value;
+        if (text == '') return;
+
+        const context = {
+            interpreter: this.interpreter,
+            node: Directory.current,
+            commands: true,
+        };
+
+        const autoComplete = inputFilter(text, context);
+        if (autoComplete == undefined)
+            return;
+
+        //TODO autocomplete
+        // event.target.value = text;
+        console.log(autoComplete);
+    }
+
     async autoScroll() {
         var outputDiv = document.getElementById('output');
         const autoScrollTargetDiv = document.getElementById(this.autoScrollTargetDivID);
@@ -256,7 +277,7 @@ export default class CLI extends Program {
                         <React.Fragment key={block.props.id}>{block}</React.Fragment>
                     ))}
                 </div>
-                <input type="text" id="input" autoFocus></input>
+                <input type="text" id="input" onChange={this.onInputChanged} autoFocus></input>
             </div>
         );
     }
