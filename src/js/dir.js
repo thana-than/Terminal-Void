@@ -3,7 +3,7 @@ import Data from "./gameData";
 import React from "react";
 
 const REGEX_SLASH = /[\\/]/;
-const REGEX_ROOT = /^(\s*(?:root|\/|\\))/i;
+const REGEX_ROOT = /^(\s*(?:\/|\\))/i;
 const ROOT_NAME = 'ROOT';
 const START_DIR = '/instance/'
 import { File, Folder, Key } from './icons';
@@ -60,8 +60,8 @@ class Directory {
 
     //*builds an array that includes the most straightforward node path from the start to end node
     static tracePath(startNode, endNode) {
-        var startParents = startNode.getParents();
-        var endParents = endNode.getParents();
+        var startParents = startNode.getParents(true);
+        var endParents = endNode.getParents(true);
 
         if (startParents[0] != endParents[0]) throw `Nodes ${startNode.fullName} and ${endNode.fullName} have no common ancestor.`; //*Should never happen in out game, since all nodes are based in ROOT but it's here in case
 
@@ -102,7 +102,7 @@ class Directory {
 
         const rootMatch = path.match(REGEX_ROOT);
         if (rootMatch) {
-            targetNode = this.root;
+            targetNode = targetNode.getParentMost();
             path = path.replace(rootMatch[1], "");
         }
 
@@ -115,7 +115,7 @@ class Directory {
         if (!targetNode.getChild(pathArray[0])) {
             const parents = targetNode.getParents();
             for (let i = parents.length - 1; i >= 0; i--) {
-                if (pathArray[0] == parents[i].name) {
+                if (pathArray[0] == parents[i].name.toLowerCase()) {
                     targetNode = parents[i];
                     pathArray.shift();
                     break;
@@ -228,9 +228,19 @@ class PathNode {
         return 'listItem';
     }
 
-    getParents() {
+    getParentMost(forceAccess = false) {
+        if (this.parent == null)
+            return this;
+
+        if (!forceAccess && !this.parent.hasAccess())
+            return this;
+
+        return this.parent;
+    }
+
+    getParents(forceAccess = false) {
         var nodes = []
-        for (let node = this; node != null; node = node.parent) {
+        for (let node = this; node != null && (forceAccess || node.hasAccess()); node = node.parent) {
             nodes.unshift(node)
         }
         return nodes;
@@ -269,7 +279,7 @@ class PathNode {
     }
 
     path() {
-        if (this.parent == null)
+        if (this.parent == null || !this.parent.hasAccess())
             return this.fullName;
 
         return `${this.parent.path()}/${this.fullName}`
