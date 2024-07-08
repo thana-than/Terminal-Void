@@ -31,6 +31,7 @@ class Directory {
 
     static cdNode(node) {
         Directory.current = node;
+        node.hasOpened = true;
         return node.path();
     }
 
@@ -53,6 +54,7 @@ class Directory {
     }
 
     static async runNode(node) {
+        node.hasOpened = true;
         return await FileHandle.open(node);
     }
 
@@ -211,8 +213,19 @@ class PathNode {
         this.key = jsonNode["key"]
         this.examine = jsonNode["examine"]
         this.accessFail = jsonNode["accessFail"]
+        this.hasOpened = false;
         if (this.isFile) { this.fullName += `\.${this.gameExt}`; }
         else { this.children = new Map(); }
+    }
+
+    getClassName() {
+        if (!this.hasAccess())
+            return 'lockedItem';
+
+        if (!this.hasOpened)
+            return 'freshItem'
+
+        return 'listItem';
     }
 
     getParents() {
