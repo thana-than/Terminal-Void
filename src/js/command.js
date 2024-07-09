@@ -2,7 +2,6 @@ import Data from "./gameData";
 import React from 'react';
 const REGEX_COMMAND_SEPARATOR = /(?:"([^"]+)"|'([^']+)')|(\S+)/g //*Matches commands and parameters split between spaces and double or single quotes. quotes are removed when matching
 import inputFilter from './autocomplete';
-import { Directory } from './dir';
 
 export default class Interpreter {
     commands = new Map();
@@ -65,7 +64,6 @@ export default class Interpreter {
 
         //*Set up some important context properties
         context.interpreter = this;
-        context.node = Directory.current;
         context.flags = new Set();
 
         if (currentWord == undefined)
@@ -73,7 +71,7 @@ export default class Interpreter {
 
         if (wordIndex == 0) { //* if we're on our first word, then we're just starting off! apply whatever flags are specified by our initial context
             if (currentWord == '') //*If we're at no letters whatsoever, get outa here
-                return '';
+                return [];
 
             if (context.firstWordFlags)
                 context.firstWordFlags.forEach((flag) => context.flags.add(flag));
@@ -84,7 +82,7 @@ export default class Interpreter {
             const parameterIndex = wordIndex - 1;
             const cmd = this.Get(startWord);
             if (!Interpreter.commandIsValid(cmd))
-                return '';
+                return [];
 
             //* we go through the command to gather any specified contexts
             if (cmd.autoContexts != null) {
@@ -110,11 +108,8 @@ export default class Interpreter {
         }
 
         //*Heres where we send the word + context to get our result!
-        const predictedStr = inputFilter(currentWord, context);
-        if (predictedStr == undefined)
-            return '';
-
-        return predictedStr;
+        const predictions = inputFilter(currentWord, context);
+        return predictions;
     }
 
     static commandIsValid(command) {

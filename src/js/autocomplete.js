@@ -1,26 +1,65 @@
 import React from "react";
+import { Directory } from './dir';
 
 export default function inputFilter(str, context) {
-    const possibilities = getContexts(context).filter(item => item.toLowerCase().startsWith(str));
+    const parsedStr = getPathedString(str);
+    context.complexPath = parsedStr.path != '';
+    context.node = getContextNode(parsedStr.path);
 
-    return possibilities[0];
+    const collectedContexts = getContexts(context);
+    const possibilities = collectedContexts.reduce((arr, item) => {
+        if (item.toLowerCase().startsWith(parsedStr.end.toLowerCase())) {
+
+            arr.push({
+                word: `${parsedStr.path}${item}`,
+                end: item.slice(parsedStr.end.length)
+            });
+        }
+        return arr;
+    }, []);
+
+    return possibilities;
 }
 
-const pathingContexts = ['../', 'BACK'];
+const backWords = ['../', 'BACK'];
+const REGEX_PATH_SNIPPET = /^(.*[\\\/])/
 
 function getContexts(context) {
     const arr = []
-    if (context.flags.has('commands')) arr.push(...getCommandContexts(context.interpreter));
-    if (context.flags.has('folders')) arr.push(...getFolderContexts(context.node));
-    if (context.flags.has('files')) arr.push(...getFileContexts(context.node));
+
     if (context.custom != null) arr.push(...context.custom);
+    if (!context.complexPath && context.flags.has('commands')) arr.push(...getCommandContexts(context));
+
+    if (context.flags.has('files')) arr.push(...getFileContexts(context));
+    if (context.flags.has('files') || context.flags.has('folders')) arr.push(...getFolderContexts(context));
 
     return arr;
 }
 
-function getCommandContexts(interpreter) {
-    const result = Array.from(interpreter.commands).reduce((arr, [name, value]) => {
-        const requested = interpreter.Get(name);
+function getPathedString(str) {
+    const split = {
+        path: '',
+        end: str,
+    }
+    const pathMatch = str.match(REGEX_PATH_SNIPPET);
+    if (pathMatch) {
+        split.path = pathMatch[0];
+        split.end = str.replace(REGEX_PATH_SNIPPET, '');
+    }
+    return split;
+}
+
+function getContextNode(path) {
+    const dirResult = Directory.get(path);
+    if (!dirResult.success)
+        return Directory.current;
+
+    return dirResult.node;
+}
+
+function getCommandContexts(context) {
+    const result = Array.from(context.interpreter.commands).reduce((arr, [name, value]) => {
+        const requested = context.interpreter.Get(name);
 
         //*If it's one of these then it's an error message, get it out of here!
         if (requested == null || typeof requested === 'string' || React.isValidElement(requested))
@@ -32,19 +71,26 @@ function getCommandContexts(interpreter) {
     return result.sort();
 }
 
-function getFolderContexts(node) {
-    const result = Array.from(node.children).reduce((arr, [name, child]) => {
+function getFolderContexts(context) {
+    const result = Array.from(context.node.children).reduce((arr, [name, child]) => {
         if (child.isFolder) {
             arr.push(child.fullName);
         }
         return arr;
     }, []);
-    result.push(...pathingContexts);
+
+    //* Push backwards movemet context patterns only if this path isnt complex! (using slashes)
+    if (!context.complexPath) {
+        const parents = context.node.getParents().map((parent) => parent.fullName);
+        result.push(...parents);
+        result.push(...backWords);
+    }
+
     return result;
 }
 
-function getFileContexts(node) {
-    const result = Array.from(node.children).reduce((arr, [name, child]) => {
+function getFileContexts(context) {
+    const result = Array.from(context.node.children).reduce((arr, [name, child]) => {
         if (child.isFile) {
             arr.push(child.fullName);
         }
