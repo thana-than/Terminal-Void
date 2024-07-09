@@ -10,7 +10,7 @@ const pathingContexts = ['../', 'BACK'];
 
 function getContexts(context) {
     const arr = []
-    if (context.flags.has('commands')) arr.push(...getCommandContexts(context.interpreter).sort());
+    if (context.flags.has('commands')) arr.push(...getCommandContexts(context.interpreter));
     if (context.flags.has('folders')) arr.push(...getFolderContexts(context.node));
     if (context.flags.has('files')) arr.push(...getFileContexts(context.node));
     if (context.custom != null) arr.push(...context.custom);
@@ -29,7 +29,7 @@ function getCommandContexts(interpreter) {
         arr.push(name);
         return arr;
     }, []);
-    return result;
+    return result.sort();
 }
 
 function getFolderContexts(node) {
