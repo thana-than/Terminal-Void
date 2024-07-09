@@ -233,11 +233,13 @@ export default class CLI extends Program {
         }
 
         this.autoCompleteState.index = 0;
-        this.autoCompleteFillHTML(words.pop(), autoCompleteDiv);
+        this.autoCompleteFillHTML(text, autoCompleteDiv);
     }
 
-    autoCompleteFillHTML(lastWord, autoCompleteDiv) {
-        autoCompleteDiv.innerHTML = this.autoCompleteState.words[this.autoCompleteState.index].end;
+    autoCompleteFillHTML(text, autoCompleteDiv) {
+        const space = '&nbsp;'.repeat(text.length);
+        const end = this.autoCompleteState.words[this.autoCompleteState.index].end;
+        autoCompleteDiv.innerHTML = `${space}${end}`;
     }
 
     assignAutoCompleteIndex(index, text, autoCompleteDiv) {
@@ -246,14 +248,8 @@ export default class CLI extends Program {
             return;
         }
 
-        const lastWord = this.getSplits(text).pop();
-        if (lastWord == undefined) {
-            this.clearAutoComplete(autoCompleteDiv);
-            return;
-        }
-
         this.autoCompleteState.index = index;
-        this.autoCompleteFillHTML(lastWord, autoCompleteDiv);
+        this.autoCompleteFillHTML(text, autoCompleteDiv);
     }
 
     getSplits(text) {
@@ -288,34 +284,13 @@ export default class CLI extends Program {
     }
 
     updateAutoCompletePosition(inputDiv, autoCompleteDiv) {
-        const cursorPosition = this.getCaretCoordinates(inputDiv, inputDiv.value.length);
-        autoCompleteDiv.style.left = `${cursorPosition.x}px`;
-        autoCompleteDiv.style.top = `${cursorPosition.y}px`;
-        autoCompleteDiv.style.height = `${cursorPosition.height}px`;
-    }
-
-    getCaretCoordinates(inputElement, offset) {
-        const inputRect = inputElement.getBoundingClientRect();
-        const parentRect = inputElement.parentElement.getBoundingClientRect();
-
+        const inputRect = inputDiv.getBoundingClientRect();
+        const parentRect = inputDiv.parentElement.getBoundingClientRect();
         const relLeft = inputRect.left - parentRect.left;
         const relTop = inputRect.top - parentRect.top;
 
-        const inputStyle = window.getComputedStyle(inputElement);
-        const fontSize = parseFloat(inputStyle.fontSize);
-        //const letterSpacing = parseFloat(inputStyle.letterSpacing);
-        const charWidth = fontSize;// + letterSpacing;
-
-        const marginTop = parseFloat(inputStyle.paddingTop);
-        const padding = parseFloat(inputStyle.paddingBlockEnd)
-
-        //* 1.1) / 2 seems to be the magic number that works in my VERY specific case. Very hacky I know.
-        //TODO find out how to actually properly map this!!!
-        const x = relLeft + offset * (charWidth * 1.1) / 2;
-        const y = relTop + marginTop + padding;
-        const height = fontSize;
-
-        return { x, y, height };
+        autoCompleteDiv.style.left = `${relLeft}px`;
+        autoCompleteDiv.style.top = `${relTop}px`;
     }
 
     async autoScroll() {
@@ -403,8 +378,10 @@ export default class CLI extends Program {
                         <React.Fragment key={block.props.id}>{block}</React.Fragment>
                     ))}
                 </div>
-                <input type="text" id="input" onChange={this.onInputChanged} autoFocus></input>
-                <div id='autoComplete'></div>
+                <div className='inputBox'>
+                    <input type="text" id="input" onChange={this.onInputChanged} autoFocus></input>
+                    <div id='autoComplete'></div>
+                </div>
             </div>
         );
     }

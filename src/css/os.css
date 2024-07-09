@@ -29,16 +29,6 @@ ol {
     color: var(--primary-color);
 }
 
-#autoComplete {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    z-index: 10;
-    vertical-align: bottom;
-    text-align: left;
-    color: #444;
-}
-
 #programTheme {
     --primary-color: #fff;
     --secondary-color: #ff0;
@@ -186,17 +176,38 @@ body,
     color: var(--secondary-color);
 }
 
-input {
-    margin-top: 10px;
+.inputBox {
     width: 100%;
-    box-sizing: border-box;
-    background: #000;
+    overflow: hidden;
+    position: relative;
+    margin-top: 10px;
     border: solid;
-    color: var(--secondary-color);
     border-color: var(--secondary-color);
     border-width: 1px 0 0 0;
-    padding-top: 10px;
+
     outline: none;
+    box-sizing: border-box;
+    padding-top: 10px;
+}
+
+input {
+    width: 100%;
+    background: #000;
+    border: none;
+    color: var(--secondary-color);
+    padding-inline: inherit;
+
+    outline: none;
+    z-index: 1;
+}
+
+#autoComplete {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 0;
+    color: #444;
+    pointer-events: none;
 }
 
 textarea {
