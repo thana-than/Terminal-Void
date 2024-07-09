@@ -6,7 +6,7 @@ export default function inputFilter(str, context) {
     return possibilities[0];
 }
 
-const pathingContexts = ['./', '../', 'BACK'];
+const pathingContexts = ['../', 'BACK'];
 
 function getContexts(context) {
     const arr = []
@@ -19,7 +19,7 @@ function getContexts(context) {
 }
 
 function getCommandContexts(interpreter) {
-    const arr = Array.from(interpreter.commands).reduce((arr, [name, value]) => {
+    const result = Array.from(interpreter.commands).reduce((arr, [name, value]) => {
         const requested = interpreter.Get(name);
 
         //*If it's one of these then it's an error message, get it out of here!
@@ -29,25 +29,26 @@ function getCommandContexts(interpreter) {
         arr.push(name);
         return arr;
     }, []);
-    return arr;
+    return result;
 }
 
 function getFolderContexts(node) {
-    const arr = Array.from(node.children).reduce((arr, [name, child]) => {
+    const result = Array.from(node.children).reduce((arr, [name, child]) => {
         if (child.isFolder) {
             arr.push(child.fullName);
         }
         return arr;
-    }, pathingContexts);
-    return arr;
+    }, []);
+    result.push(...pathingContexts);
+    return result;
 }
 
 function getFileContexts(node) {
-    const arr = Array.from(node.children).reduce((arr, [name, child]) => {
+    const result = Array.from(node.children).reduce((arr, [name, child]) => {
         if (child.isFile) {
             arr.push(child.fullName);
         }
         return arr;
     }, []);
-    return arr;
+    return result;
 }
