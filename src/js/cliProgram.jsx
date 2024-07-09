@@ -203,7 +203,6 @@ export default class CLI extends Program {
         }
     }
 
-    //TODO move input field to another class maybe?
     onInputChanged = (event) => {
         this.runAutoComplete(event.target);
     }
