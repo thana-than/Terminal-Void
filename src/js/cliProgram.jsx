@@ -2,8 +2,6 @@ import '../css/os.css'
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Program from "./program";
-import inputFilter from './autocomplete';
-import { Directory } from './dir';
 import Interpreter from './command';
 
 function isWhitespaceString(str) { return !/\S/.test(str); }
@@ -33,6 +31,8 @@ export default class CLI extends Program {
 
     cullMax_commandBlocks = 100;
     cullMax_scrollHeight = 5000;
+
+    autoCompleteWord = '';
 
     constructor(interpreter) {
         super();
@@ -156,13 +156,13 @@ export default class CLI extends Program {
 
             this.historyIndex = this.commandHistory.length;
 
-            autoCompleteDiv.innerHTML = '';
+            clearAutoComplete(autoCompleteDiv);
             this.sendCommand(command);
         } else if (event.key === 'ArrowUp') {
             if (this.historyIndex > 0) {
                 this.historyIndex -= 1;
                 inputElement.value = this.commandHistory[this.historyIndex];
-                autoCompleteDiv.innerHTML = '';
+                clearAutoComplete(autoCompleteDiv);
             }
             event.preventDefault();
         } else if (event.key === 'ArrowDown') {
@@ -173,12 +173,10 @@ export default class CLI extends Program {
                 this.historyIndex = this.commandHistory.length;
                 inputElement.value = '';
             }
-            autoCompleteDiv.innerHTML = '';
+            clearAutoComplete(autoCompleteDiv);
             event.preventDefault();
         } else if (event.key === 'Tab') {
-            inputElement.value = inputElement.value + autoCompleteDiv.innerHTML;
-            autoCompleteDiv.innerHTML = '';
-            //TODO make autocomplete use the proper casing for the whole word
+            this.assignAutoComplete(inputElement, autoCompleteDiv);
             event.preventDefault();
         }
     }
@@ -187,28 +185,32 @@ export default class CLI extends Program {
     onInputChanged = (event) => {
         const inputDiv = event.target;
         const text = inputDiv.value;
-        const extractedPortion = Interpreter.splitCommand(text).pop();
 
         const autoCompleteDiv = document.getElementById('autoComplete');
-        autoCompleteDiv.innerHTML = this.getAutoCompleteText(extractedPortion);
+        this.updateAutoCompleteText(text, autoCompleteDiv);
         this.updateAutoCompletePosition(inputDiv, autoCompleteDiv);
     }
 
-    getAutoCompleteText(filteredText) {
-        const context = {
-            interpreter: this.interpreter,
-            node: Directory.current,
-            //TODO properly read context
-            commands: true,
-            folders: true,
-            files: true,
-        };
+    updateAutoCompleteText(text, autoCompleteDiv) {
+        const commandSplits = Interpreter.splitCommand(text);
+        let lastCommand = commandSplits.pop();
+        if (lastCommand == undefined)
+            lastCommand = '';
 
-        const autoComplete = inputFilter(filteredText, context);
-        if (autoComplete == undefined)
-            return '';
+        this.autoCompleteWord = this.interpreter.autoComplete(lastCommand, commandSplits.length);
+        autoCompleteDiv.innerHTML = this.autoCompleteWord.slice(lastCommand.length);
+    }
 
-        return autoComplete.slice(filteredText.length);//(filteredText, '');
+    assignAutoComplete(inputElement, autoCompleteDiv) {
+        let text = inputElement.value;
+        const lastWord = Interpreter.splitCommand(text).pop();
+        inputElement.value = `${text.slice(0, -lastWord.length)}${this.autoCompleteWord}`;
+        this.clearAutoComplete(autoCompleteDiv);
+    }
+
+    clearAutoComplete(autoCompleteDiv) {
+        this.autoCompleteWord = '';
+        autoCompleteDiv.innerHTML = '';
     }
 
     updateAutoCompletePosition(inputDiv, autoCompleteDiv) {
@@ -225,17 +227,14 @@ export default class CLI extends Program {
         const relLeft = inputRect.left - parentRect.left;
         const relTop = inputRect.top - parentRect.top;
 
-        // Calculate the position based on input element dimensions and font metrics
-        // This is a rough estimate and might need adjustment based on your specific styling
         const inputStyle = window.getComputedStyle(inputElement);
         const fontSize = parseFloat(inputStyle.fontSize);
         //const letterSpacing = parseFloat(inputStyle.letterSpacing);
-        const charWidth = fontSize;// + letterSpacing; // Approximate character width
+        const charWidth = fontSize;// + letterSpacing;
 
         const marginTop = parseFloat(inputStyle.paddingTop);
         const padding = parseFloat(inputStyle.paddingBlockEnd)
 
-        // Calculate X position based on left edge plus character width times offset
         //* 1.1) / 2 seems to be the magic number that works in my VERY specific case. Very hacky I know.
         //TODO find out how to actually properly map this!!!
         const x = relLeft + offset * (charWidth * 1.1) / 2;

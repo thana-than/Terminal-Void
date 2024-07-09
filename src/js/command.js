@@ -1,6 +1,8 @@
 import Data from "./gameData";
 import React from 'react';
 const REGEX_COMMAND_SEPARATOR = /(?:"([^"]+)"|'([^']+)')|(\S+)/g //*Matches commands and parameters split between spaces and double or single quotes. quotes are removed when matching
+import inputFilter from './autocomplete';
+import { Directory } from './dir';
 
 export default class Interpreter {
     commands = new Map();
@@ -54,6 +56,27 @@ export default class Interpreter {
             return false;
 
         return true;
+    }
+
+    autoComplete(portion, index) {
+        const context = {
+            interpreter: this,
+            node: Directory.current,
+            //TODO properly read context
+            commands: true,
+            folders: true,
+            files: true,
+        };
+
+        if (portion == undefined || portion == '')
+            return '';
+
+        console.log(index);
+        const predictedStr = inputFilter(portion, context);
+        if (predictedStr == undefined)
+            return '';
+
+        return predictedStr;
     }
 
     static splitCommand(command) {
