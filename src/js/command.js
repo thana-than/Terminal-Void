@@ -2,7 +2,6 @@ import Data from "./gameData";
 import React from 'react';
 const REGEX_COMMAND_SEPARATOR = /(?:"([^"]+)"|'([^']+)')|(\S+)/g //*Matches commands and parameters split between spaces and double or single quotes. quotes are removed when matching
 import inputFilter from './autocomplete';
-import { Directory } from './dir';
 
 export default class Interpreter {
     commands = new Map();
@@ -65,7 +64,6 @@ export default class Interpreter {
 
         //*Set up some important context properties
         context.interpreter = this;
-        context.node = Directory.current;
         context.flags = new Set();
 
         if (currentWord == undefined)

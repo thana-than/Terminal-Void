@@ -237,7 +237,7 @@ export default class CLI extends Program {
     }
 
     autoCompleteFillHTML(lastWord, autoCompleteDiv) {
-        autoCompleteDiv.innerHTML = this.autoCompleteState.words[this.autoCompleteState.index].slice(lastWord.length);
+        autoCompleteDiv.innerHTML = this.autoCompleteState.words[this.autoCompleteState.index].end;
     }
 
     assignAutoCompleteIndex(index, text, autoCompleteDiv) {
@@ -277,7 +277,7 @@ export default class CLI extends Program {
         if (lastLen > 0)
             text = text.slice(0, -last.length);
 
-        inputElement.value = `${text}${this.autoCompleteState.words[this.autoCompleteState.index]}`;
+        inputElement.value = `${text}${this.autoCompleteState.words[this.autoCompleteState.index].word}`;
         this.clearAutoComplete(autoCompleteDiv);
     }
 
