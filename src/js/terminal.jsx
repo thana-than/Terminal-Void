@@ -82,7 +82,7 @@ export const LIST = {
                     contents.push(listBlock(result.node));
                 }
                 else {
-                    return result.message;
+                    contents.push(result.message);
                 }
             }
             else {
