@@ -33,7 +33,7 @@ function getCommandContexts(interpreter) {
 function getFolderContexts(node) {
     return Array.from(node.children).reduce((arr, [name, child]) => {
         if (child.isFolder) {
-            arr.push(name);
+            arr.push(child.fullName);
         }
         return arr;
     }, []);
@@ -42,7 +42,7 @@ function getFolderContexts(node) {
 function getFileContexts(node) {
     return Array.from(node.children).reduce((arr, [name, child]) => {
         if (child.isFile) {
-            arr.push(name);
+            arr.push(child.fullName);
         }
         return arr;
     }, []);

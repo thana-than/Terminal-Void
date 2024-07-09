@@ -56,9 +56,13 @@ export default class Interpreter {
         return true;
     }
 
+    static splitCommand(command) {
+        return [...command.matchAll(REGEX_COMMAND_SEPARATOR)].map(match => match[1] || match[2] || match[3]);
+    }
+
     async Run(command, context) {
         //*Still don't fully understand regex, but we want to map through match[1] [2] then [3] as they are the matches using double quotes, single quotes, and regular spacing respectively
-        const cmd = [...command.matchAll(REGEX_COMMAND_SEPARATOR)].map(match => match[1] || match[2] || match[3]);
+        const cmd = Interpreter.splitCommand(command);
         const params = cmd.slice(1);
 
         const requested = this.Get(cmd[0])

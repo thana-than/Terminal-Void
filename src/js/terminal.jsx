@@ -8,7 +8,7 @@ import Global from './global.js';
 import { Folder, File, Key } from './icons';
 
 export const CD = {
-    keys: ['goto', 'go', 'cd'],
+    keys: ['goto', 'cd'],
     help: "Navigate to the folder at the given path",
     accessKey: 'CLIENT',
     accessFailed: <>COMMAND ACCESS DENIED: Permission <Key /> Required: CLIENT</>,
@@ -36,7 +36,7 @@ export const CD = {
 }
 
 export const RUN = {
-    keys: ['run', 'r', 'open', 'o'],
+    keys: ['run', 'open'],
     help: <>Runs the <File /> at the given path</>,
     verboseHelp: function () {
         return (
@@ -150,7 +150,7 @@ export const CLEAR = {
 };
 
 export const HELP = {
-    keys: ['help', 'h'],
+    keys: ['help'],
     help: <>Enter "help &#40;command_name&#41;" for more info.</>,
     verboseHelp: function () {
         return <>
@@ -197,7 +197,7 @@ export const HELP = {
 }
 
 export const EXAMINE = {
-    keys: ['examine', 'ex'],
+    keys: ['examine'],
     help: <>Examines the target <File /> or <Folder /></>,
     invoke: function (params, context) {
         if (params.length != 1)

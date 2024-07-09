@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Program from "./program";
 import inputFilter from './autocomplete';
 import { Directory } from './dir';
+import Interpreter from './command';
 
 function isWhitespaceString(str) { return !/\S/.test(str); }
 
@@ -140,6 +141,7 @@ export default class CLI extends Program {
         }
 
         const inputElement = document.getElementById('input');
+        const autoCompleteDiv = document.getElementById('autoComplete');
 
         if (event.key === 'Enter') {
             const command = inputElement.value;
@@ -154,11 +156,13 @@ export default class CLI extends Program {
 
             this.historyIndex = this.commandHistory.length;
 
+            autoCompleteDiv.innerHTML = '';
             this.sendCommand(command);
         } else if (event.key === 'ArrowUp') {
             if (this.historyIndex > 0) {
                 this.historyIndex -= 1;
                 inputElement.value = this.commandHistory[this.historyIndex];
+                autoCompleteDiv.innerHTML = '';
             }
             event.preventDefault();
         } else if (event.key === 'ArrowDown') {
@@ -169,27 +173,76 @@ export default class CLI extends Program {
                 this.historyIndex = this.commandHistory.length;
                 inputElement.value = '';
             }
+            autoCompleteDiv.innerHTML = '';
+            event.preventDefault();
+        } else if (event.key === 'Tab') {
+            inputElement.value = inputElement.value + autoCompleteDiv.innerHTML;
+            autoCompleteDiv.innerHTML = '';
+            //TODO make autocomplete use the proper casing for the whole word
             event.preventDefault();
         }
     }
 
+    //TODO move input field to another class maybe?
     onInputChanged = (event) => {
-        const text = event.target.value;
-        if (text == '') return;
+        const inputDiv = event.target;
+        const text = inputDiv.value;
+        const extractedPortion = Interpreter.splitCommand(text).pop();
 
+        const autoCompleteDiv = document.getElementById('autoComplete');
+        autoCompleteDiv.innerHTML = this.getAutoCompleteText(extractedPortion);
+        this.updateAutoCompletePosition(inputDiv, autoCompleteDiv);
+    }
+
+    getAutoCompleteText(filteredText) {
         const context = {
             interpreter: this.interpreter,
             node: Directory.current,
+            //TODO properly read context
             commands: true,
+            folders: true,
+            files: true,
         };
 
-        const autoComplete = inputFilter(text, context);
+        const autoComplete = inputFilter(filteredText, context);
         if (autoComplete == undefined)
-            return;
+            return '';
 
-        //TODO autocomplete
-        // event.target.value = text;
-        console.log(autoComplete);
+        return autoComplete.slice(filteredText.length);//(filteredText, '');
+    }
+
+    updateAutoCompletePosition(inputDiv, autoCompleteDiv) {
+        const cursorPosition = this.getCaretCoordinates(inputDiv, inputDiv.value.length);
+        autoCompleteDiv.style.left = `${cursorPosition.x}px`;
+        autoCompleteDiv.style.top = `${cursorPosition.y}px`;
+        autoCompleteDiv.style.height = `${cursorPosition.height}px`;
+    }
+
+    getCaretCoordinates(inputElement, offset) {
+        const inputRect = inputElement.getBoundingClientRect();
+        const parentRect = inputElement.parentElement.getBoundingClientRect();
+
+        const relLeft = inputRect.left - parentRect.left;
+        const relTop = inputRect.top - parentRect.top;
+
+        // Calculate the position based on input element dimensions and font metrics
+        // This is a rough estimate and might need adjustment based on your specific styling
+        const inputStyle = window.getComputedStyle(inputElement);
+        const fontSize = parseFloat(inputStyle.fontSize);
+        //const letterSpacing = parseFloat(inputStyle.letterSpacing);
+        const charWidth = fontSize;// + letterSpacing; // Approximate character width
+
+        const marginTop = parseFloat(inputStyle.paddingTop);
+        const padding = parseFloat(inputStyle.paddingBlockEnd)
+
+        // Calculate X position based on left edge plus character width times offset
+        //* 1.1) / 2 seems to be the magic number that works in my VERY specific case. Very hacky I know.
+        //TODO find out how to actually properly map this!!!
+        const x = relLeft + offset * (charWidth * 1.1) / 2;
+        const y = relTop + marginTop + padding;
+        const height = fontSize;
+
+        return { x, y, height };
     }
 
     async autoScroll() {
@@ -278,6 +331,7 @@ export default class CLI extends Program {
                     ))}
                 </div>
                 <input type="text" id="input" onChange={this.onInputChanged} autoFocus></input>
+                <div id='autoComplete'></div>
             </div>
         );
     }
