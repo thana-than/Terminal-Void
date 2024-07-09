@@ -30,8 +30,10 @@ function getContexts(context) {
     if (context.custom != null) arr.push(...context.custom);
     if (!context.complexPath && context.flags.has('commands')) arr.push(...getCommandContexts(context));
 
-    if (context.flags.has('files')) arr.push(...getFileContexts(context));
-    if (context.flags.has('files') || context.flags.has('folders')) arr.push(...getFolderContexts(context));
+    if (context.node) {
+        if (context.flags.has('files')) arr.push(...getFileContexts(context));
+        if (context.flags.has('files') || context.flags.has('folders')) arr.push(...getFolderContexts(context));
+    }
 
     return arr;
 }
@@ -51,10 +53,10 @@ function getPathedString(str) {
 
 function getContextNode(path) {
     const dirResult = Directory.get(path);
-    if (!dirResult.success)
-        return Directory.current;
+    if (dirResult.success && dirResult.node.isFolder)
+        return dirResult.node;
 
-    return dirResult.node;
+    return null;
 }
 
 function getCommandContexts(context) {
