@@ -29,6 +29,16 @@ ol {
     color: var(--primary-color);
 }
 
+#autoComplete {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 10;
+    vertical-align: bottom;
+    text-align: left;
+    color: #444;
+}
+
 #programTheme {
     --primary-color: #fff;
     --secondary-color: #ff0;

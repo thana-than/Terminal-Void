@@ -2,6 +2,7 @@ import '../css/os.css'
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Program from "./program";
+import Interpreter from './command';
 
 function isWhitespaceString(str) { return !/\S/.test(str); }
 
@@ -30,6 +31,9 @@ export default class CLI extends Program {
 
     cullMax_commandBlocks = 100;
     cullMax_scrollHeight = 5000;
+
+    autoCompleteWord = '';
+    autoCompleteContext = { cli: this };
 
     constructor(interpreter) {
         super();
@@ -138,6 +142,7 @@ export default class CLI extends Program {
         }
 
         const inputElement = document.getElementById('input');
+        const autoCompleteDiv = document.getElementById('autoComplete');
 
         if (event.key === 'Enter') {
             const command = inputElement.value;
@@ -152,11 +157,13 @@ export default class CLI extends Program {
 
             this.historyIndex = this.commandHistory.length;
 
+            this.clearAutoComplete(autoCompleteDiv);
             this.sendCommand(command);
         } else if (event.key === 'ArrowUp') {
             if (this.historyIndex > 0) {
                 this.historyIndex -= 1;
                 inputElement.value = this.commandHistory[this.historyIndex];
+                this.clearAutoComplete(autoCompleteDiv);
             }
             event.preventDefault();
         } else if (event.key === 'ArrowDown') {
@@ -167,8 +174,100 @@ export default class CLI extends Program {
                 this.historyIndex = this.commandHistory.length;
                 inputElement.value = '';
             }
+            this.clearAutoComplete(autoCompleteDiv);
+            event.preventDefault();
+        } else if (event.key === 'Tab') {
+            this.assignAutoComplete(inputElement, autoCompleteDiv);
             event.preventDefault();
         }
+    }
+
+    //TODO move input field to another class maybe?
+    onInputChanged = (event) => {
+        this.runAutoComplete(event.target);
+    }
+
+    runAutoComplete(inputDiv) {
+        if (!this.interpreter || typeof this.interpreter.autoComplete !== 'function')
+            return;
+
+        const text = inputDiv.value;
+
+        const autoCompleteDiv = document.getElementById('autoComplete');
+        this.updateAutoCompleteText(text, autoCompleteDiv);
+        this.updateAutoCompletePosition(inputDiv, autoCompleteDiv);
+    }
+
+    updateAutoCompleteText(text, autoCompleteDiv) {
+        const words = this.getSplits(text);
+        if (words.length == 0) {
+            this.clearAutoComplete(autoCompleteDiv);
+            return;
+        }
+
+        this.autoCompleteWord = this.interpreter.autoComplete(words, this.autoCompleteContext);
+        autoCompleteDiv.innerHTML = this.autoCompleteWord.slice(words.pop().length);
+    }
+
+    getSplits(text) {
+        const commandSplits = Interpreter.splitCommand(text);
+
+        if (/\s$/.test(text))
+            commandSplits.push(''); //*Make sure we add the last space if that's a thing
+
+        return commandSplits;
+    }
+
+    assignAutoComplete(inputElement, autoCompleteDiv) {
+        let text = inputElement.value;
+        if (text == '' || this.autoCompleteWord == '')
+            return;
+
+        const commandSplits = this.getSplits(text);
+        const last = commandSplits[commandSplits.length - 1];
+        const lastLen = last.length;
+
+        if (lastLen > 0)
+            text = text.slice(0, -last.length);
+
+        inputElement.value = `${text}${this.autoCompleteWord}`;
+        this.clearAutoComplete(autoCompleteDiv);
+    }
+
+    clearAutoComplete(autoCompleteDiv) {
+        this.autoCompleteWord = '';
+        autoCompleteDiv.innerHTML = '';
+    }
+
+    updateAutoCompletePosition(inputDiv, autoCompleteDiv) {
+        const cursorPosition = this.getCaretCoordinates(inputDiv, inputDiv.value.length);
+        autoCompleteDiv.style.left = `${cursorPosition.x}px`;
+        autoCompleteDiv.style.top = `${cursorPosition.y}px`;
+        autoCompleteDiv.style.height = `${cursorPosition.height}px`;
+    }
+
+    getCaretCoordinates(inputElement, offset) {
+        const inputRect = inputElement.getBoundingClientRect();
+        const parentRect = inputElement.parentElement.getBoundingClientRect();
+
+        const relLeft = inputRect.left - parentRect.left;
+        const relTop = inputRect.top - parentRect.top;
+
+        const inputStyle = window.getComputedStyle(inputElement);
+        const fontSize = parseFloat(inputStyle.fontSize);
+        //const letterSpacing = parseFloat(inputStyle.letterSpacing);
+        const charWidth = fontSize;// + letterSpacing;
+
+        const marginTop = parseFloat(inputStyle.paddingTop);
+        const padding = parseFloat(inputStyle.paddingBlockEnd)
+
+        //* 1.1) / 2 seems to be the magic number that works in my VERY specific case. Very hacky I know.
+        //TODO find out how to actually properly map this!!!
+        const x = relLeft + offset * (charWidth * 1.1) / 2;
+        const y = relTop + marginTop + padding;
+        const height = fontSize;
+
+        return { x, y, height };
     }
 
     async autoScroll() {
@@ -256,7 +355,8 @@ export default class CLI extends Program {
                         <React.Fragment key={block.props.id}>{block}</React.Fragment>
                     ))}
                 </div>
-                <input type="text" id="input" autoFocus></input>
+                <input type="text" id="input" onChange={this.onInputChanged} autoFocus></input>
+                <div id='autoComplete'></div>
             </div>
         );
     }

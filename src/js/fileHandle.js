@@ -5,7 +5,6 @@ import React from 'react';
 import { runProgram } from './OS.jsx';
 import DOMPurify from 'dompurify';
 
-//TODO build examiner command that can parse the files for the "examine" tag
 class FileHandle {
     static fileHandles = new Map();
 
