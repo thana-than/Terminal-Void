@@ -165,21 +165,24 @@ export const HELP = {
     },
     invoke: function (params, context) {
         const len = params.length;
-        if (len > 1) {
-            return "help command takes 0 or more parameters (command)";
-        }
-        else if (len == 1) {
-            const command = context.interpreter.Get(params[0]);
-            if (command) {
-                if (command.verboseHelp)
-                    return this.getVerboseHelpBlock(command);
-                else if (command.help)
-                    return this.getHelpBlock(command);
-            }
-            return `Help - Parameter ${params[0]} not recognized as a command`;
+
+        var str = [];
+        if (len > 0) {
+            params.forEach(param => {
+                const command = context.interpreter.Get(param);
+                if (command) {
+                    if (command.verboseHelp)
+                        str.push(this.getVerboseHelpBlock(command));
+                    else if (command.help)
+                        str.push(this.getHelpBlock(command));
+                }
+                else {
+                    str.push(<div key={uuidv4()}>Help - Parameter {param} not recognized as a command</div>);
+                }
+
+            });
         }
         else {
-            var str = [];
             context.interpreter.commandArray.forEach(command => {
                 if (command == this)
                     str.push(<div key={uuidv4()} className='subHead'>{this.help}</div>);
