@@ -33,6 +33,7 @@ export default class CLI extends Program {
     cullMax_scrollHeight = 5000;
 
     autoCompleteWord = '';
+    autoCompleteContext = { cli: this };
 
     constructor(interpreter) {
         super();
@@ -156,13 +157,13 @@ export default class CLI extends Program {
 
             this.historyIndex = this.commandHistory.length;
 
-            clearAutoComplete(autoCompleteDiv);
+            this.clearAutoComplete(autoCompleteDiv);
             this.sendCommand(command);
         } else if (event.key === 'ArrowUp') {
             if (this.historyIndex > 0) {
                 this.historyIndex -= 1;
                 inputElement.value = this.commandHistory[this.historyIndex];
-                clearAutoComplete(autoCompleteDiv);
+                this.clearAutoComplete(autoCompleteDiv);
             }
             event.preventDefault();
         } else if (event.key === 'ArrowDown') {
@@ -173,7 +174,7 @@ export default class CLI extends Program {
                 this.historyIndex = this.commandHistory.length;
                 inputElement.value = '';
             }
-            clearAutoComplete(autoCompleteDiv);
+            this.clearAutoComplete(autoCompleteDiv);
             event.preventDefault();
         } else if (event.key === 'Tab') {
             this.assignAutoComplete(inputElement, autoCompleteDiv);
@@ -192,19 +193,38 @@ export default class CLI extends Program {
     }
 
     updateAutoCompleteText(text, autoCompleteDiv) {
-        const commandSplits = Interpreter.splitCommand(text);
-        let lastCommand = commandSplits.pop();
-        if (lastCommand == undefined)
-            lastCommand = '';
+        const words = this.getSplits(text);
+        if (words.length == 0) {
+            this.clearAutoComplete(autoCompleteDiv);
+            return;
+        }
 
-        this.autoCompleteWord = this.interpreter.autoComplete(lastCommand, commandSplits.length);
-        autoCompleteDiv.innerHTML = this.autoCompleteWord.slice(lastCommand.length);
+        this.autoCompleteWord = this.interpreter.autoComplete(words, this.autoCompleteContext);
+        autoCompleteDiv.innerHTML = this.autoCompleteWord.slice(words.pop().length);
+    }
+
+    getSplits(text) {
+        const commandSplits = Interpreter.splitCommand(text);
+
+        if (/\s$/.test(text))
+            commandSplits.push(''); //*Make sure we add the last space if that's a thing
+
+        return commandSplits;
     }
 
     assignAutoComplete(inputElement, autoCompleteDiv) {
         let text = inputElement.value;
-        const lastWord = Interpreter.splitCommand(text).pop();
-        inputElement.value = `${text.slice(0, -lastWord.length)}${this.autoCompleteWord}`;
+        if (text == '' || this.autoCompleteWord == '')
+            return;
+
+        const commandSplits = this.getSplits(text);
+        const last = commandSplits[commandSplits.length - 1];
+        const lastLen = last.length;
+
+        if (lastLen > 0)
+            text = text.slice(0, -last.length);
+
+        inputElement.value = `${text}${this.autoCompleteWord}`;
         this.clearAutoComplete(autoCompleteDiv);
     }
 

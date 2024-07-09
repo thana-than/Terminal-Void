@@ -12,6 +12,7 @@ export const CD = {
     help: "Navigate to the folder at the given path",
     accessKey: 'CLIENT',
     accessFailed: <>COMMAND ACCESS DENIED: Permission <Key /> Required: CLIENT</>,
+    autoContexts: [['folders']],
     verboseHelp: function () {
         return (
             <>
@@ -38,6 +39,7 @@ export const CD = {
 export const RUN = {
     keys: ['run', 'open'],
     help: <>Runs the <File /> at the given path</>,
+    autoContexts: [['files']],
     verboseHelp: function () {
         return (
             <>
@@ -58,6 +60,7 @@ export const RUN = {
 export const LIST = {
     keys: ['list', 'ls'],
     help: <>Lists the <File />s in the current <Folder /></>,
+    autoContexts: [['folders'], '...'],
     verboseHelp: function () {
         return (
             <>
@@ -120,6 +123,7 @@ export const LIST = {
 export const CLEAR = {
     keys: ['clear', 'cls'],
     help: "Clears the terminal screen",
+    autoCustomContext: ['restore', 'undo'],
     verboseHelp: function () {
         return (
             <>
@@ -152,6 +156,7 @@ export const CLEAR = {
 export const HELP = {
     keys: ['help'],
     help: <>Enter "help &#40;command_name&#41;" for more info.</>,
+    autoContexts: [['commands'], '...'],
     verboseHelp: function () {
         return <>
             Describes available commands.
@@ -198,6 +203,7 @@ export const HELP = {
 
 export const EXAMINE = {
     keys: ['examine'],
+    autoContexts: [['files', 'folders']],
     help: <>Examines the target <File /> or <Folder /></>,
     invoke: function (params, context) {
         if (params.length != 1)
@@ -234,6 +240,7 @@ const interpreter = new Interpreter(
 
 const Terminal = new CLI(interpreter);
 Terminal.themeStyle = "terminalTheme";
+Terminal.autoCompleteContext.firstWordFlags = ['commands', 'folders', 'files'];
 
 if (Global.GOD_MODE)
     var godModeMessage = <div>God mode activated.</div>

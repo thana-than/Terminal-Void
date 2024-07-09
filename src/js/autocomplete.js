@@ -2,23 +2,24 @@ import React from "react";
 
 export default function inputFilter(str, context) {
     const possibilities = getContexts(context).filter(item => item.toLowerCase().startsWith(str));
-    possibilities.sort();
 
     return possibilities[0];
 }
 
+const pathingContexts = ['./', '../', 'BACK'];
+
 function getContexts(context) {
     const arr = []
-    if (context.commands) arr.push(...getCommandContexts(context.interpreter));
-    if (context.folders) arr.push(...getFolderContexts(context.node));
-    if (context.files) arr.push(...getFileContexts(context.node));
+    if (context.flags.has('commands')) arr.push(...getCommandContexts(context.interpreter).sort());
+    if (context.flags.has('folders')) arr.push(...getFolderContexts(context.node));
+    if (context.flags.has('files')) arr.push(...getFileContexts(context.node));
     if (context.custom != null) arr.push(...context.custom);
 
     return arr;
 }
 
 function getCommandContexts(interpreter) {
-    return Array.from(interpreter.commands).reduce((arr, [name, value]) => {
+    const arr = Array.from(interpreter.commands).reduce((arr, [name, value]) => {
         const requested = interpreter.Get(name);
 
         //*If it's one of these then it's an error message, get it out of here!
@@ -28,22 +29,25 @@ function getCommandContexts(interpreter) {
         arr.push(name);
         return arr;
     }, []);
+    return arr;
 }
 
 function getFolderContexts(node) {
-    return Array.from(node.children).reduce((arr, [name, child]) => {
+    const arr = Array.from(node.children).reduce((arr, [name, child]) => {
         if (child.isFolder) {
             arr.push(child.fullName);
         }
         return arr;
-    }, []);
+    }, pathingContexts);
+    return arr;
 }
 
 function getFileContexts(node) {
-    return Array.from(node.children).reduce((arr, [name, child]) => {
+    const arr = Array.from(node.children).reduce((arr, [name, child]) => {
         if (child.isFile) {
             arr.push(child.fullName);
         }
         return arr;
     }, []);
+    return arr;
 }
