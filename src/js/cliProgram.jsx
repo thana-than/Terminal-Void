@@ -8,6 +8,7 @@ function isWhitespaceString(str) { return !/\S/.test(str); }
 
 export default class CLI extends Program {
     commandHistory = [];
+    commandBuffer = '';
     historyIndex = -1;
     commandHistory_maxSize = 50;
     blocks = [];
@@ -32,7 +33,10 @@ export default class CLI extends Program {
     cullMax_commandBlocks = 100;
     cullMax_scrollHeight = 5000;
 
-    autoCompleteWord = '';
+    autoCompleteState = {
+        words: [],
+        index: 0,
+    }
     autoCompleteContext = { cli: this };
 
     constructor(interpreter) {
@@ -158,23 +162,40 @@ export default class CLI extends Program {
             this.historyIndex = this.commandHistory.length;
 
             this.clearAutoComplete(autoCompleteDiv);
+            this.commandBuffer = '';
             this.sendCommand(command);
         } else if (event.key === 'ArrowUp') {
-            if (this.historyIndex > 0) {
+            const wordsLen = this.autoCompleteState.words.length;
+            if (wordsLen > 0) {
+                this.autoCompleteState.index = (this.autoCompleteState.index - 1 + wordsLen) % wordsLen;
+                this.assignAutoCompleteIndex(this.autoCompleteState.index, inputElement.value, autoCompleteDiv);
+            }
+            else if (this.historyIndex > 0) {
+                if (this.historyIndex == this.commandHistory.length)
+                    this.commandBuffer = inputElement.value;
+
                 this.historyIndex -= 1;
                 inputElement.value = this.commandHistory[this.historyIndex];
                 this.clearAutoComplete(autoCompleteDiv);
             }
             event.preventDefault();
         } else if (event.key === 'ArrowDown') {
-            if (this.historyIndex < this.commandHistory.length - 1) {
-                this.historyIndex += 1;
-                inputElement.value = this.commandHistory[this.historyIndex];
-            } else {
-                this.historyIndex = this.commandHistory.length;
-                inputElement.value = '';
+            const wordsLen = this.autoCompleteState.words.length;
+            if (wordsLen > 0) {
+                this.autoCompleteState.index = (this.autoCompleteState.index + 1) % this.autoCompleteState.words.length;
+                this.assignAutoCompleteIndex(this.autoCompleteState.index, inputElement.value, autoCompleteDiv);
             }
-            this.clearAutoComplete(autoCompleteDiv);
+            else {
+                if (this.historyIndex < this.commandHistory.length - 1) {
+                    this.historyIndex += 1;
+                    inputElement.value = this.commandHistory[this.historyIndex];
+                } else {
+                    this.historyIndex = this.commandHistory.length;
+                    inputElement.value = this.commandBuffer;
+                }
+                this.clearAutoComplete(autoCompleteDiv);
+            }
+
             event.preventDefault();
         } else if (event.key === 'Tab') {
             this.assignAutoComplete(inputElement, autoCompleteDiv);
@@ -205,8 +226,34 @@ export default class CLI extends Program {
             return;
         }
 
-        this.autoCompleteWord = this.interpreter.autoComplete(words, this.autoCompleteContext);
-        autoCompleteDiv.innerHTML = this.autoCompleteWord.slice(words.pop().length);
+        this.autoCompleteState.words = this.interpreter.autoComplete(words, this.autoCompleteContext);
+        if (this.autoCompleteState.words == undefined || this.autoCompleteState.words.length == 0) {
+            this.clearAutoComplete(autoCompleteDiv);
+            return;
+        }
+
+        this.autoCompleteState.index = 0;
+        this.autoCompleteFillHTML(words.pop(), autoCompleteDiv);
+    }
+
+    autoCompleteFillHTML(lastWord, autoCompleteDiv) {
+        autoCompleteDiv.innerHTML = this.autoCompleteState.words[this.autoCompleteState.index].slice(lastWord.length);
+    }
+
+    assignAutoCompleteIndex(index, text, autoCompleteDiv) {
+        if (this.autoCompleteState.words == undefined || this.autoCompleteState.words.length == 0) {
+            this.clearAutoComplete(autoCompleteDiv);
+            return;
+        }
+
+        const lastWord = this.getSplits(text).pop();
+        if (lastWord == undefined) {
+            this.clearAutoComplete(autoCompleteDiv);
+            return;
+        }
+
+        this.autoCompleteState.index = index;
+        this.autoCompleteFillHTML(lastWord, autoCompleteDiv);
     }
 
     getSplits(text) {
@@ -220,7 +267,7 @@ export default class CLI extends Program {
 
     assignAutoComplete(inputElement, autoCompleteDiv) {
         let text = inputElement.value;
-        if (text == '' || this.autoCompleteWord == '')
+        if (text == '' || this.autoCompleteState.words.length == 0)
             return;
 
         const commandSplits = this.getSplits(text);
@@ -230,12 +277,13 @@ export default class CLI extends Program {
         if (lastLen > 0)
             text = text.slice(0, -last.length);
 
-        inputElement.value = `${text}${this.autoCompleteWord}`;
+        inputElement.value = `${text}${this.autoCompleteState.words[this.autoCompleteState.index]}`;
         this.clearAutoComplete(autoCompleteDiv);
     }
 
     clearAutoComplete(autoCompleteDiv) {
-        this.autoCompleteWord = '';
+        this.autoCompleteState.words = [];
+        this.autoCompleteState.index = 0;
         autoCompleteDiv.innerHTML = '';
     }
 

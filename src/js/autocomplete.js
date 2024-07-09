@@ -3,7 +3,7 @@ import React from "react";
 export default function inputFilter(str, context) {
     const possibilities = getContexts(context).filter(item => item.toLowerCase().startsWith(str));
 
-    return possibilities[0];
+    return possibilities;
 }
 
 const pathingContexts = ['../', 'BACK'];
