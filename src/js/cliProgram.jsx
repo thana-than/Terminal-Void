@@ -184,7 +184,13 @@ export default class CLI extends Program {
 
     //TODO move input field to another class maybe?
     onInputChanged = (event) => {
-        const inputDiv = event.target;
+        this.runAutoComplete(event.target);
+    }
+
+    runAutoComplete(inputDiv) {
+        if (!this.interpreter || typeof this.interpreter.autoComplete !== 'function')
+            return;
+
         const text = inputDiv.value;
 
         const autoCompleteDiv = document.getElementById('autoComplete');
