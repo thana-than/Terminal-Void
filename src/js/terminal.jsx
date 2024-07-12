@@ -50,11 +50,11 @@ export const OPEN = {
 
             if (result.node.isFile) {
                 //* Run if file
-                return await RUN.invoke(params, context);//context.interpreter.Run(`run ${params}`, context);
+                return await RUN.invoke(params, context);
             }
             else {
                 //* Nav if folder
-                return CD.invoke(params, context);//context.interpreter.Run(`cd ${params}`, context);
+                return CD.invoke(params, context);
             }
         }
 
