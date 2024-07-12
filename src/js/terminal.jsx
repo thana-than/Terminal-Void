@@ -8,7 +8,7 @@ import Global from './global.js';
 import { Folder, File, Key } from './icons';
 
 export const CD = {
-    keys: ['goto', 'cd'],
+    keys: ['goto', 'cd', 'open'],
     help: "Navigate to the folder at the given path",
     accessKey: 'CLIENT',
     accessFailed: <>COMMAND ACCESS DENIED: Permission <Key /> Required: CLIENT</>,
@@ -33,6 +33,32 @@ export const CD = {
         if (newDir.success)
             return <>{LIST.invoke()}</>;
         return newDir.message;
+    }
+}
+
+export const OPEN = {
+    keys: ['open'],
+    alias: 'run',
+    autoContexts: [['files', 'folders']],
+    invoke: async function (params, context) {
+        const result = Directory.get(params[0])
+        if (result.node) //* Start by seeing if the param is a path to a directory
+        {
+            //* We don't check success until after the node is identified so that we can keep the messages related to the context of the users intent (navigation)
+            if (!result.success)
+                return result.message;
+
+            if (result.node.isFile) {
+                //* Run if file
+                return await RUN.invoke(params, context);//context.interpreter.Run(`run ${params}`, context);
+            }
+            else {
+                //* Nav if folder
+                return CD.invoke(params, context);//context.interpreter.Run(`cd ${params}`, context);
+            }
+        }
+
+        return null;
     }
 }
 
@@ -169,7 +195,12 @@ export const HELP = {
         var str = [];
         if (len > 0) {
             params.forEach(param => {
-                const command = context.interpreter.Get(param);
+                let command = context.interpreter.Get(param);
+                if (command && command.alias) {
+                    command = context.interpreter.Get(command.alias);
+                    console.log(command)
+                }
+
                 if (command) {
                     if (command.verboseHelp)
                         str.push(this.getVerboseHelpBlock(command));
@@ -216,28 +247,29 @@ export const EXAMINE = {
 };
 
 async function smartCommand(command, context) {
-    const result = Directory.get(command)
-    if (result.node) //* Start by seeing if the command is a path to a directory
-    {
-        //* We don't check success until after the node is identified so that we can keep the messages related to the context of the users intent (navigation)
-        if (!result.success)
-            return result.message;
+    return OPEN.invoke([command], context);
+    // const result = Directory.get(command)
+    // if (result.node) //* Start by seeing if the command is a path to a directory
+    // {
+    //     //* We don't check success until after the node is identified so that we can keep the messages related to the context of the users intent (navigation)
+    //     if (!result.success)
+    //         return result.message;
 
-        if (result.node.isFile) {
-            //* Run if file
-            return await context.interpreter.Run(`run ${command}`, context);
-        }
-        else {
-            //* Nav if folder
-            return context.interpreter.Run(`cd ${command}`, context);
-        }
-    }
+    //     if (result.node.isFile) {
+    //         //* Run if file
+    //         return await context.interpreter.Run(`run ${command}`, context);
+    //     }
+    //     else {
+    //         //* Nav if folder
+    //         return context.interpreter.Run(`cd ${command}`, context);
+    //     }
+    // }
 
-    return null;
+    // return null;
 }
 
 const interpreter = new Interpreter(
-    [HELP, LIST, EXAMINE, RUN, CD, CLEAR],
+    [HELP, LIST, EXAMINE, OPEN, RUN, CD, CLEAR],
     smartCommand
 );
 
