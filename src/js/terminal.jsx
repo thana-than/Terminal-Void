@@ -196,10 +196,9 @@ export const HELP = {
                 let command = context.interpreter.Get(param);
                 if (command && command.alias) {
                     command = context.interpreter.Get(command.alias);
-                    console.log(command)
                 }
 
-                if (command) {
+                if (Interpreter.commandIsValid(command)) {
                     if (command.verboseHelp)
                         str.push(this.getVerboseHelpBlock(command));
                     else if (command.help)
@@ -246,24 +245,6 @@ export const EXAMINE = {
 
 async function smartCommand(command, context) {
     return OPEN.invoke([command], context);
-    // const result = Directory.get(command)
-    // if (result.node) //* Start by seeing if the command is a path to a directory
-    // {
-    //     //* We don't check success until after the node is identified so that we can keep the messages related to the context of the users intent (navigation)
-    //     if (!result.success)
-    //         return result.message;
-
-    //     if (result.node.isFile) {
-    //         //* Run if file
-    //         return await context.interpreter.Run(`run ${command}`, context);
-    //     }
-    //     else {
-    //         //* Nav if folder
-    //         return context.interpreter.Run(`cd ${command}`, context);
-    //     }
-    // }
-
-    // return null;
 }
 
 const interpreter = new Interpreter(
