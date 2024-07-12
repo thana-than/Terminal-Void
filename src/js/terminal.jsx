@@ -122,8 +122,6 @@ export const LIST = {
                 {spacing}</div>
         });
 
-        // return str(contents);
-
         function listBlock(dirNode) {
             const arr = Array.from(dirNode.children.values());
             arr.sort((a, b) => { return a.isFile - b.isFile; });
