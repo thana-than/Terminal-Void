@@ -19,7 +19,8 @@ export default class Interpreter {
             const keys = command.keys;
             if (keys) {
                 keys.forEach(key => {
-                    this.commands.set(key, command);
+                    if (!this.commands.has(key))
+                        this.commands.set(key, command);
                 });
             }
         });

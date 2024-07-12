@@ -1,4 +1,4 @@
-import React from "react";
+import Interpreter from './command.js';
 import { Directory } from './dir';
 
 export default function inputFilter(str, context) {
@@ -64,7 +64,7 @@ function getCommandContexts(context) {
         const requested = context.interpreter.Get(name);
 
         //*If it's one of these then it's an error message, get it out of here!
-        if (requested == null || typeof requested === 'string' || React.isValidElement(requested))
+        if (!Interpreter.commandIsValid(requested))
             return arr;
 
         arr.push(name);
