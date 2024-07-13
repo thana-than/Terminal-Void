@@ -197,7 +197,7 @@ export default class CLI extends Program {
             }
 
             event.preventDefault();
-        } else if (event.key === 'Tab') {
+        } else if (this.isUserAttemptingAutoComplete(event, inputElement)) {
             this.assignAutoComplete(inputElement, autoCompleteDiv);
             event.preventDefault();
         }
@@ -205,6 +205,16 @@ export default class CLI extends Program {
 
     onInputChanged = (event) => {
         this.runAutoComplete(event.target);
+    }
+
+    isUserAttemptingAutoComplete(event, inputElement) {
+        if (event.key === 'Tab')
+            return true;
+
+        if (event.key === 'ArrowRight' && this.hasAutoComplete() && inputElement.selectionStart >= inputElement.value.length)
+            return true;
+
+        return false;
     }
 
     runAutoComplete(inputDiv) {
@@ -242,13 +252,17 @@ export default class CLI extends Program {
     }
 
     assignAutoCompleteIndex(index, text, autoCompleteDiv) {
-        if (this.autoCompleteState.words == undefined || this.autoCompleteState.words.length == 0) {
+        if (!this.hasAutoComplete()) {
             this.clearAutoComplete(autoCompleteDiv);
             return;
         }
 
         this.autoCompleteState.index = index;
         this.autoCompleteFillHTML(text, autoCompleteDiv);
+    }
+
+    hasAutoComplete() {
+        return this.autoCompleteState.words != undefined && this.autoCompleteState.words.length > 0;
     }
 
     getSplits(text) {
@@ -262,7 +276,7 @@ export default class CLI extends Program {
 
     assignAutoComplete(inputElement, autoCompleteDiv) {
         let text = inputElement.value;
-        if (text == '' || this.autoCompleteState.words.length == 0)
+        if (text == '' || !this.hasAutoComplete())
             return;
 
         const commandSplits = this.getSplits(text);
