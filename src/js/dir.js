@@ -214,6 +214,8 @@ class PathNode {
         this.examine = jsonNode["examine"]
         this.accessFail = jsonNode["accessFail"]
         this.hasOpened = false;
+        //TODO appropriate messaging when navigating through a hidden node
+        this.hiddenWhenLocked = jsonNode["hidden"];
         if (this.isFile) { this.fullName += `\.${this.gameExt}`; }
         else { this.children = new Map(); }
     }

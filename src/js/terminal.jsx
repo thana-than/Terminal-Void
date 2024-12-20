@@ -124,6 +124,11 @@ export const LIST = {
 
         function listBlock(dirNode) {
             const arr = Array.from(dirNode.children.values());
+            for (let i = arr.length - 1; i >= 0; i--) {
+                let node = arr[i];
+                if (!node.hasAccess() && node.hiddenWhenLocked)
+                    arr.splice(i, 1);
+            }
             arr.sort((a, b) => { return a.isFile - b.isFile; });
 
             return (
