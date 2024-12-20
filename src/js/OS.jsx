@@ -69,14 +69,22 @@ export default function OS() {
             }
         };
 
+        const handleKeyUp = (event) => {
+            if (runningProgram) {
+                runningProgram.onKeyUp(event);
+            }
+        };
+
         //* Add the event listener
         window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
 
         update = requestAnimationFrame(updateLoop);
 
         //* Cleanup
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
             cancelAnimationFrame(runningProgram);
         };
     }, []);
