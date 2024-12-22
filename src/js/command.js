@@ -28,14 +28,14 @@ export default class Interpreter {
         this.defaultCommand = defaultCommand;
     }
 
-    Get(command) {
+    Get(command, context) {
         const commandObj = this.commands.get(command);
 
         if (!commandObj)
             return null;
 
         //*If the command requires an accessKey but we don't have it, return null
-        if (!this.HasAccess(commandObj)) {
+        if (!this.HasAccess(commandObj, context)) {
             if (commandObj.accessFailed)
                 return commandObj.accessFailed;
 
@@ -45,14 +45,14 @@ export default class Interpreter {
         return commandObj;
     }
 
-    HasAccess(command) {
+    HasAccess(command, context) {
         const commandObj = (typeof command === 'string') ? this.commands.get(command) : command;
 
         if (!commandObj)
             return false;
 
         //*If the command requires an accessKey but we don't have it, return null
-        if (commandObj.accessKey && !Data.HasAccess(commandObj.accessKey))
+        if (commandObj.accessKey && !Data.HasAccess(commandObj.accessKey, context))
             return false;
 
         return true;
@@ -81,7 +81,7 @@ export default class Interpreter {
 
             //* try to get a command from the interpreter for our first word, if we can't then we're out of luck on any more predictions
             const parameterIndex = wordIndex - 1;
-            const cmd = this.Get(startWord);
+            const cmd = this.Get(startWord, context);
             if (!Interpreter.commandIsValid(cmd))
                 return [];
 
@@ -128,8 +128,10 @@ export default class Interpreter {
         //*Still don't fully understand regex, but we want to map through match[1] [2] then [3] as they are the matches using double quotes, single quotes, and regular spacing respectively
         const cmd = Interpreter.splitCommand(command);
         const params = cmd.slice(1);
+        context.key = cmd[0];
+        context.fullCommand = command;
 
-        const requested = this.Get(cmd[0])
+        const requested = this.Get(cmd[0], context)
         if (!requested) {
             if (this.defaultCommand && params.length == 0) {
                 const response = await this.defaultCommand(cmd[0], context);

@@ -23,15 +23,15 @@ export const CD = {
             </>
         );
     },
-    invoke: function (params) {
+    invoke: function (params, context) {
         if (params && params.length > 1)
             return "cd command takes 1 parameter (path)";
 
         const dirParam = (params) ? params[0] : './';
 
-        const newDir = Directory.cd(dirParam);
+        const newDir = Directory.cd(dirParam, context);
         if (newDir.success)
-            return <>{LIST.invoke()}</>;
+            return <>{LIST.invoke(null, context)}</>;
         return newDir.message;
     }
 }
@@ -41,7 +41,7 @@ export const OPEN = {
     alias: 'run',
     autoContexts: [['files', 'folders']],
     invoke: async function (params, context) {
-        const result = Directory.get(params[0])
+        const result = Directory.get(params[0], context)
         if (result.node) //* Start by seeing if the param is a path to a directory
         {
             //* We don't check success until after the node is identified so that we can keep the messages related to the context of the users intent (navigation)
@@ -75,11 +75,11 @@ export const RUN = {
             </>
         );
     },
-    invoke: async function (params) {
+    invoke: async function (params, context) {
         if (params.length != 1)
             return <>run command takes 1 parameter (<File /> path)</>;
 
-        return await Directory.run(params[0]);
+        return await Directory.run(params[0], context);
     }
 }
 
@@ -96,16 +96,16 @@ export const LIST = {
             </>
         );
     },
-    invoke: function (params) {
+    invoke: function (params, context) {
         if (!params || params.length == 0)
             params = ['./']
 
         const contents = [];
         params.forEach(path => {
-            const result = Directory.get(path);
+            const result = Directory.get(path, context);
             if (result.node && !result.node.isFile) {
                 if (result.success) {
-                    contents.push(listBlock(result.node));
+                    contents.push(listBlock(result.node, context));
                 }
                 else {
                     contents.push(result.message);
@@ -122,13 +122,8 @@ export const LIST = {
                 {spacing}</div>
         });
 
-        function listBlock(dirNode) {
-            const arr = Array.from(dirNode.children.values());
-            for (let i = arr.length - 1; i >= 0; i--) {
-                let node = arr[i];
-                if (!node.hasAccess() && node.hiddenWhenLocked)
-                    arr.splice(i, 1);
-            }
+        function listBlock(dirNode, context) {
+            const arr = Array.from(dirNode.children.values()).filter((node) => (node.isVisible(context)));
             arr.sort((a, b) => { return a.isFile - b.isFile; });
 
             return (
@@ -137,7 +132,7 @@ export const LIST = {
                     <ul className='directoryList'>
                         {arr.map(node => {
                             const icon = node.isFile ? <File text='' /> : <Folder text='' />;
-                            return (<li className={node.getClassName()} key={uuidv4()}>
+                            return (<li className={node.getClassName(context)} key={uuidv4()}>
                                 <span>{icon}</span>
                                 {node.fullName}
                             </li>);
@@ -182,6 +177,40 @@ export const CLEAR = {
     }
 };
 
+export const SUDO = {
+    keys: ['sudo', 'root'],
+    help: "Performs given command with highest user permissions.",
+    //TODO better autocomplete
+    autoContexts: [['commands', 'folders', 'files', 'super'], '...'],
+    accessKey: 'SUPERUSER',
+    accessFailed: <>COMMAND ACCESS DENIED: User does not have superuser privileges.</>,
+    invoke: async function (params, context) {
+        if (!params || params.length == 0)
+            return "Requires command."
+
+        this.invokeAsSuperuser(context);
+    },
+    invokeAsSuperuser: async function (context) {
+        const command = context.fullCommand.slice(context.key.length, context.fullCommand.length).trim();
+        context.superuser = true;
+        return await context.cli.interpret(command, context);
+    }
+}
+
+export const DEV = {
+    keys: ['dev'],
+    help: SUDO.help,
+    autoContexts: SUDO.autoContexts,
+    accessKey: 'DEV',
+    invoke: async function (params, context) {
+        if (!params || params.length == 0)
+            return "Requires command."
+
+        context.devcommand = true;
+        return await SUDO.invokeAsSuperuser(context);
+    }
+}
+
 export const HELP = {
     keys: ['help'],
     help: <>Enter "help &#40;command_name&#41;" for more info.</>,
@@ -198,9 +227,9 @@ export const HELP = {
         var str = [];
         if (len > 0) {
             params.forEach(param => {
-                let command = context.interpreter.Get(param);
+                let command = context.interpreter.Get(param, context);
                 if (command && command.alias) {
-                    command = context.interpreter.Get(command.alias);
+                    command = context.interpreter.Get(command.alias, context);
                 }
 
                 if (Interpreter.commandIsValid(command)) {
@@ -219,7 +248,7 @@ export const HELP = {
             context.interpreter.commandArray.forEach(command => {
                 if (command == this)
                     str.push(<div key={uuidv4()} className='subHead'>{this.help}</div>);
-                else if (interpreter.HasAccess(command) && command.help)
+                else if (interpreter.HasAccess(command, context.superuser) && command.help)
                     str.push(this.getHelpBlock(command));
             });
         }
@@ -244,7 +273,7 @@ export const EXAMINE = {
     invoke: function (params, context) {
         if (params.length != 1)
             return "examine command takes 1 parameter (path)";
-        return Directory.examine(params[0]);
+        return Directory.examine(params[0], context);
     }
 };
 
@@ -253,13 +282,13 @@ async function smartCommand(command, context) {
 }
 
 const interpreter = new Interpreter(
-    [HELP, LIST, EXAMINE, OPEN, RUN, CD, CLEAR],
+    [SUDO, DEV, HELP, LIST, EXAMINE, OPEN, RUN, CD, CLEAR],
     smartCommand
 );
 
 const Terminal = new CLI(interpreter);
 Terminal.themeStyle = "terminalTheme";
-Terminal.autoCompleteContext.firstWordFlags = ['commands', 'folders', 'files'];
+Terminal.firstWordFlags = ['commands', 'folders', 'files'];
 
 if (Global.GOD_MODE)
     var godModeMessage = <div>God mode activated.</div>

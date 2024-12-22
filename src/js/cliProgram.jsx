@@ -3,6 +3,7 @@ import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Program from "./program";
 import Interpreter from './command';
+import UserPerms from './userperms.js';
 
 function isWhitespaceString(str) { return !/\S/.test(str); }
 
@@ -37,7 +38,6 @@ export default class CLI extends Program {
         words: [],
         index: 0,
     }
-    autoCompleteContext = { cli: this };
 
     constructor(interpreter) {
         super();
@@ -99,17 +99,25 @@ export default class CLI extends Program {
         this.print(<>{commandMarkup}{responseMarkup}</>);
     }
 
+    async interpret(cleaned_command, context) {
+        const interpret = typeof context.interpreter.Run === 'function' ? context.interpreter.Run : context.interpreter;
+        const payload = await interpret.call(context.interpreter, cleaned_command, context);
+        return payload;
+    }
+
+    createContext() {
+        const context = new UserPerms();
+        context.cli = this;
+        context.interpreter = this.interpreter;
+        return context;
+    }
+
     async sendCommand(command) {
         this.commandRunning = true;
         const cleaned_command = command.toLowerCase().trim()
 
-        const context = {
-            cli: this,
-            interpreter: this.interpreter,
-        }
-
-        const interpret = typeof this.interpreter.Run === 'function' ? this.interpreter.Run : this.interpreter;
-        const payload = await interpret.call(this.interpreter, cleaned_command, context);
+        const context = this.createContext();
+        const payload = await this.interpret(cleaned_command, context);
 
         //*Payload parsing
         let response = payload;
@@ -235,7 +243,11 @@ export default class CLI extends Program {
             return;
         }
 
-        this.autoCompleteState.words = this.interpreter.autoComplete(words, this.autoCompleteContext);
+        const context = this.createContext();
+        if (this.firstWordFlags != undefined)
+            context.firstWordFlags = this.firstWordFlags;
+
+        this.autoCompleteState.words = this.interpreter.autoComplete(words, context);
         if (this.autoCompleteState.words == undefined || this.autoCompleteState.words.length == 0) {
             this.clearAutoComplete(autoCompleteDiv);
             return;
