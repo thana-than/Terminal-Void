@@ -34,6 +34,9 @@ export default class CLI extends Program {
     cullMax_commandBlocks = 100;
     cullMax_scrollHeight = 5000;
 
+    firstWordFlags = ['commands', 'folders', 'files'];
+    allowAutoComplete = true;
+
     autoCompleteState = {
         words: [],
         index: 0,
@@ -140,6 +143,8 @@ export default class CLI extends Program {
         }
 
         this.commandRunning = false;
+
+        return payload;
     }
 
     onKeyDown(event) {
@@ -226,6 +231,9 @@ export default class CLI extends Program {
     }
 
     runAutoComplete(inputDiv) {
+        if (!this.allowAutoComplete)
+            return;
+
         if (!this.interpreter || typeof this.interpreter.autoComplete !== 'function')
             return;
 
