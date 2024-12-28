@@ -3,6 +3,7 @@ import Global from '../js/global';
 import init from '../js/init.js'
 import Data from '../js/gameData';
 import Terminal, { CD } from '../js/terminal';
+import { Directory } from '../js/dir.js';
 
 //* Expect Reference: https://jestjs.io/docs/expect
 
@@ -17,6 +18,9 @@ afterEach(() => {
     //* Reset keys
     Data.accessKeys.clear();
     Data.accessKeys.add(Global.build);
+
+    //* Force ourselves back to the start directory
+    Directory.cdStartDir();
 
     //* Clear terminal
     Terminal.clear();

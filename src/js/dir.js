@@ -36,6 +36,10 @@ class Directory {
         return node.path(context);
     }
 
+    static cdStartDir() {
+        Directory.cd(START_DIR, SUPERUSER, true);
+    }
+
     static async run(path, context) {
         const result = Directory.get(path, context)
         if (!result.success) return result.message;
@@ -181,7 +185,7 @@ class Directory {
         //*We rename the gameFolder to ROOT for gameplay
         this.root.fullName = this.root.name = ROOT_NAME;
         //*Set our start point
-        Directory.cd(START_DIR, SUPERUSER, true);
+        Directory.cdStartDir();
         return this.root;
     }
 
