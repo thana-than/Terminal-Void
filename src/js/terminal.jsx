@@ -9,60 +9,7 @@ import { Folder, File, Key } from './icons';
 
 
 export const TerminalCommands = {
-    HELP: {
-        keys: ['help'],
-        help: <>Enter "help &#40;command_name&#41;" for more info.</>,
-        autoContexts: [['commands'], '...'],
-        verboseHelp: function () {
-            return <>
-                Describes available commands.
-                <div className='subtext'>{this.help}</div>
-            </>;
-        },
-        invoke: function (params, context) {
-            const len = params.length;
-
-            var str = [];
-            if (len > 0) {
-                params.forEach(param => {
-                    let command = context.interpreter.Get(param, context);
-                    if (command && command.alias) {
-                        command = context.interpreter.Get(command.alias, context);
-                    }
-
-                    if (Interpreter.commandIsValid(command)) {
-                        if (command.verboseHelp)
-                            str.push(this.getVerboseHelpBlock(command));
-                        else if (command.help)
-                            str.push(this.getHelpBlock(command));
-                    }
-                    else {
-                        str.push(<div key={uuidv4()}>Help - Parameter {param} not recognized as a command</div>);
-                    }
-
-                });
-            }
-            else {
-                context.interpreter.commandArray.forEach(command => {
-                    if (command == this)
-                        str.push(<div key={uuidv4()} className='subHead'>{this.help}</div>);
-                    else if (interpreter.HasAccess(command, context.superuser) && command.help)
-                        str.push(this.getHelpBlock(command));
-                });
-            }
-
-            return <>{str}</>;
-        },
-        getHelpBlock: function (command) {
-            return (<div key={uuidv4()}>{this.prefix(command)} <span className='small'>{command.help}</span></div>);
-        },
-        getVerboseHelpBlock: function (command) {
-            return (<div key={uuidv4()}>{this.prefix(command)}<br></br>{command.verboseHelp()}</div>);
-        },
-        prefix: function (command) {
-            return <>{command.keys[0]}<span className='subHead'> [{command.keys.join(', ')}]</span>:</>
-        }
-    },
+    ...BASE_COMMANDS, //* Spread BASE_COMMANDS into TerminalCommands
 
     SUDO: {
         keys: ['sudo', 'root'],
@@ -278,12 +225,11 @@ export const TerminalCommands = {
             return payload;
         }
     },
-
-    ...BASE_COMMANDS, //* Spread BASE_COMMANDS into TerminalCommands
 }
 
 TerminalCommands.EXIT = {
     ...TerminalCommands.EXIT, //* copy EXIT but change the invoke since we dont want to be able to exit the base terminal
+    help: undefined,
     invoke: function (params, context) {
         return "Cannot close base terminal!";
     }

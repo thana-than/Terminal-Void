@@ -2,11 +2,68 @@ import Data from "./gameData";
 import React from 'react';
 const REGEX_COMMAND_SEPARATOR = /(?:"([^"]+)"|'([^']+)')|(\S+)/g //*Matches commands and parameters split between spaces and double or single quotes. quotes are removed when matching
 import inputFilter from './autocomplete';
+import { v4 as uuidv4 } from 'uuid';
+
 
 export const BASE_COMMANDS = {
+    HELP: {
+        keys: ['help'],
+        help: <>Enter "help &#40;command_name&#41;" for more info.</>,
+        autoContexts: [['commands'], '...'],
+        verboseHelp: function () {
+            return <>
+                Describes available commands.
+                <div className='subtext'>{this.help}</div>
+            </>;
+        },
+        invoke: function (params, context) {
+            const len = params.length;
+
+            var str = [];
+            if (len > 0) {
+                params.forEach(param => {
+                    let command = context.interpreter.Get(param, context);
+                    if (command && command.alias) {
+                        command = context.interpreter.Get(command.alias, context);
+                    }
+
+                    if (Interpreter.commandIsValid(command)) {
+                        if (command.verboseHelp)
+                            str.push(this.getVerboseHelpBlock(command));
+                        else if (command.help)
+                            str.push(this.getHelpBlock(command));
+                    }
+                    else {
+                        str.push(<div key={uuidv4()}>Help - Parameter {param} not recognized as a command</div>);
+                    }
+
+                });
+            }
+            else {
+                context.interpreter.commandArray.forEach(command => {
+                    if (command == this)
+                        str.push(<div key={uuidv4()} className='subHead'>{this.help}</div>);
+                    else if (context.interpreter.HasAccess(command, context.superuser) && command.help)
+                        str.push(this.getHelpBlock(command));
+                });
+            }
+
+            return <>{str}</>;
+        },
+        getHelpBlock: function (command) {
+            return (<div key={uuidv4()}>{this.prefix(command)} <span className='small'>{command.help}</span></div>);
+        },
+        getVerboseHelpBlock: function (command) {
+            return (<div key={uuidv4()}>{this.prefix(command)}<br></br>{command.verboseHelp()}</div>);
+        },
+        prefix: function (command) {
+            return <>{command.keys[0]}<span className='subHead'> [{command.keys.join(', ')}]</span>:</>
+        }
+    },
+
     EXIT: {
         keys: ['exit', 'close', 'quit'],
-        help: "Closes the actively running program (Esc key also works)",
+        help: "Closes the actively running program.",
         invoke: function (params, context) {
             context.cli.close();
         }
