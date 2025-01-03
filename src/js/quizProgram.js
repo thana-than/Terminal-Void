@@ -1,8 +1,7 @@
-import Interpreter from "./command";
+import Interpreter, { BASE_COMMANDS } from './command.js';
 import CLI from "./cliProgram";
 
 //TODO:
-//! Quick exiting with Esc
 //! Exiting on fail state (make optional)
 //! Next prompt branching instead of simple indexing (provided by QuizPrompt answers) (should just index if undefined) (exits on null)
 //! Provide example quiz in dev folder
@@ -38,7 +37,7 @@ export class QuizPrompt {
             }
         }
 
-        this.interpreter = new Interpreter(commands);
+        this.interpreter = new Interpreter(Object.values(BASE_COMMANDS).concat(commands));
     }
 }
 
@@ -53,8 +52,11 @@ export class Quiz extends CLI {
     }
 
     async sendCommand(command) {
-        const response = await super.sendCommand(command)
         if (this.isCompleted())
+            return;
+
+        const response = await super.sendCommand(command)
+        if (response === undefined)
             return;
 
         if (response.isCorrect)
