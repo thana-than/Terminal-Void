@@ -2,7 +2,6 @@ import '../css/os.css'
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Program from "./program";
-import Interpreter from './command';
 
 export default class Application extends Program {
     examine() { return "An Application." }

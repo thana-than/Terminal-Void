@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 import Global from '../js/global';
 import init from '../js/init.js'
 import Data from '../js/gameData';
-import Terminal, { CD } from '../js/terminal';
+import Terminal, { TerminalCommands } from '../js/terminal';
 import { Directory } from '../js/dir.js';
 
 //* Expect Reference: https://jestjs.io/docs/expect
@@ -35,14 +35,14 @@ const getText = (jsx) => {
 
 test('Permission failure - via CD command.', async () => {
     const response = getText(await Terminal.sendCommand("cd dev"))
-    expect(response).toBe(getText(CD.accessFailed));
+    expect(response).toBe(getText(TerminalCommands.CD.accessFailed));
 });
 
 test('Permission failure - via folder .', async () => {
     //* Clear access key to dev
     Data.accessKeys.delete(Global.build);
     //* Add CD access key
-    Data.accessKeys.add(CD.accessKey);
+    Data.accessKeys.add(TerminalCommands.CD.accessKey);
 
     const response = await Terminal.sendCommand("cd dev")
     const responseStr = getText(response); //* Need to stringify react component cause we are doing a regex search
@@ -51,7 +51,7 @@ test('Permission failure - via folder .', async () => {
 
 test('cd dev - use Change Directory to enter dev folder.', async () => {
     //* Add CD access key
-    Data.accessKeys.add(CD.accessKey);
+    Data.accessKeys.add(TerminalCommands.CD.accessKey);
 
     //* The folder we are coming from
     const initialFolder = getText(await Terminal.sendCommand("ls"))

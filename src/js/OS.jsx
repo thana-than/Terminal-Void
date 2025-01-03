@@ -65,13 +65,13 @@ export default function OS() {
         //* Define the keydown event handler
         const handleKeyDown = (event) => {
             if (runningProgram) {
-                runningProgram.onKeyDown(event);
+                runningProgram.event_keyDown(event);
             }
         };
 
         const handleKeyUp = (event) => {
             if (runningProgram) {
-                runningProgram.onKeyUp(event);
+                runningProgram.event_keyUp(event);
             }
         };
 

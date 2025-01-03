@@ -3,15 +3,30 @@ import React from 'react';
 const REGEX_COMMAND_SEPARATOR = /(?:"([^"]+)"|'([^']+)')|(\S+)/g //*Matches commands and parameters split between spaces and double or single quotes. quotes are removed when matching
 import inputFilter from './autocomplete';
 
+export const BASE_COMMANDS = {
+    EXIT: {
+        keys: ['exit', 'close', 'quit'],
+        help: "Closes the actively running program (Esc key also works)",
+        invoke: function (params, context) {
+            context.cli.close();
+        }
+    }
+}
+
 export default class Interpreter {
     commands = new Map();
     commandArray = [];
     defaultCommand;
     constructor(commands, defaultCommand) {
-        //*If commands aren't an array, we are going to assume this is a simple interpreter that takes one function
+        //*If commands aren't an array, we are going to assume this an object containing commands as values
         if (!Array.isArray(commands)) {
-            this.defaultCommand = commands;
-            return;
+            commands = Object.values(commands);
+
+            //* If commands still aren't an array, we are going to assume this is a simple interpreter that takes one function
+            if (!Array.isArray(commands)) {
+                this.defaultCommand = commands;
+                return;
+            }
         }
         this.commandArray = commands;
 
