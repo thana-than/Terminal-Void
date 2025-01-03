@@ -19,9 +19,9 @@ export default class Program {
             return false;
 
         const key = event.key.toLowerCase();
-        const exitRequested = //* Some key tests
-            key == "escape" ||
-            key == "c" && event.ctrlKey;
+        const exitRequested = //* Key tests
+            key == "escape"
+        // || key == "c" && event.ctrlKey; //? was a good idea initially but would remove copy paste functionality from game
 
         if (exitRequested)
             this.close();
