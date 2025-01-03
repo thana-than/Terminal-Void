@@ -4,7 +4,7 @@ export default class Program {
     refreshCallback = null;
     closeCallback = null;
     themeStyle = "programTheme";
-    closeKey = "Escape"
+    canCloseOnKey = true
 
     event_keyDown(event) {
         if (this.testCloseKey(event))
@@ -15,7 +15,14 @@ export default class Program {
     event_keyUp(event) { this.onKeyUp(event) }
 
     testCloseKey(event) {
-        const exitRequested = this.closeKey != null && event.key == this.closeKey;
+        if (!this.canCloseOnKey)
+            return false;
+
+        const key = event.key.toLowerCase();
+        const exitRequested = //* Some key tests
+            key == "escape" ||
+            key == "c" && event.ctrlKey;
+
         if (exitRequested)
             this.close();
         return exitRequested;

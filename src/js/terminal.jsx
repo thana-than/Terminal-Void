@@ -227,13 +227,7 @@ export const TerminalCommands = {
     },
 }
 
-TerminalCommands.EXIT = {
-    ...TerminalCommands.EXIT, //* copy EXIT but change the invoke since we dont want to be able to exit the base terminal
-    help: undefined,
-    invoke: function (params, context) {
-        return "Cannot close base terminal!";
-    }
-};
+delete TerminalCommands.EXIT; //* Delete the exit command from this terminal
 
 async function smartCommand(command, context) {
     return TerminalCommands.OPEN.invoke([command], context);
@@ -246,7 +240,7 @@ const interpreter = new Interpreter(
 
 const Terminal = new CLI(interpreter);
 Terminal.themeStyle = "terminalTheme";
-Terminal.closeKey = null;
+Terminal.canCloseOnKey = false;
 
 if (Global.GOD_MODE)
     var godModeMessage = <div>God mode activated.</div>
