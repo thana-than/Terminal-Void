@@ -1,7 +1,7 @@
 import '../css/os.css'
 import Interpreter, { BASE_COMMANDS } from './command.js';
 import CLI from "./cliProgram";
-import { Directory } from './dir.js';
+import { Directory, PathNode } from './dir.js';
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Global from './global.js';
@@ -225,6 +225,23 @@ export const TerminalCommands = {
             return payload;
         }
     },
+
+    WRITE: {
+        keys: ['write'],
+        //TODO help and verbose help
+        help: "Write a file.",
+        accessKey: 'WRITE',
+        invoke: function (params, context) {
+            //TODO params confirmation (two params: path and contents)
+            //TODO context driven pathing
+            const parent = Directory.get('./', context).node;
+            //TODO overwrites
+            PathNode.createRuntimeNode(params[0], true, parent, params[1]);
+
+            //TODO exit response
+            return "done";
+        }
+    }
 }
 
 delete TerminalCommands.EXIT; //* Delete the exit command from this terminal

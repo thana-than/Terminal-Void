@@ -190,38 +190,82 @@ class Directory {
     }
 
     static buildNodes(jsonNode, parent) {
-        let node = new PathNode(jsonNode, parent)
+        let node = PathNode.fromJSON(jsonNode, parent)
+        if (node.isFile)
+            console.log("LOG " + node.gameExt);
 
         if (node.isFile)
             return node;
 
         jsonNode["children"].forEach(child => {
             let cNode = this.buildNodes(child, node)
-            node.children.set(cNode.name.toLowerCase(), cNode)
         });
 
         return node
     }
 }
 
-class PathNode {
-    constructor(jsonNode, parent) {
-        this.name = jsonNode["name"];
-        this.hash = jsonNode["hash"];
-        this.pathLink = jsonNode["pathLink"]
-        this.type = jsonNode["type"]
-        this.isFile = this.type != "directory"
+export class PathNode {
+    static TYPE_RUNTIME_FILE = "runtime";
+    static TYPE_RUNTIME_FILE_DEFAULT_EXT = "file";
+    static TYPE_DIRECTORY = "directory";
+
+    static fromJSON(jsonNode, parent) {
+        const node = new PathNode(jsonNode["name"], jsonNode["gameExt"], jsonNode["type"], parent, jsonNode["hash"])
+        node.pathLink = jsonNode["pathLink"]
+        node.key = jsonNode["key"]
+        node.examine = jsonNode["examine"]
+        node.accessFail = jsonNode["accessFail"]
+        node.hiddenWhenLocked = jsonNode["hidden"];
+        return node;
+    }
+
+    static createRuntimeNode(name, isFile, parent, runtimePayload) {
+        const nameExt = name.toString().split('.');
+        const node = new PathNode(nameExt[0], nameExt[1], isFile ? PathNode.TYPE_RUNTIME_FILE : PathNode.TYPE_DIRECTORY, parent)
+        node.readOnly = false;
+        //TODO sanitize payload
+        node.runtimePayload = runtimePayload;
+        return node;
+    }
+
+    generateRuntimeHash() {
+        const str = this.parent.fullName + this.fullName;
+        let hash = 0;
+
+        if (str.length > 0) {
+            for (let i = 0; i < str.length; i++) {
+                let char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+        }
+
+        return "runtime_" + this.fullName + '_' + hash.toString();
+    }
+
+    constructor(name, gameExt, type, parent, hash) {
+        this.name = name;
+        this.gameExt = gameExt;
+        this.parent = parent;
+        this.type = type;
+        this.isFile = this.type != PathNode.TYPE_DIRECTORY
+        if (this.isFile && this.gameExt == undefined)
+            this.gameExt = PathNode.TYPE_RUNTIME_FILE_DEFAULT_EXT
         this.isFolder = !this.isFile;
-        this.parent = parent
-        this.gameExt = jsonNode["gameExt"]
         this.fullName = this.name;
-        this.key = jsonNode["key"]
-        this.examine = jsonNode["examine"]
-        this.accessFail = jsonNode["accessFail"]
         this.hasOpened = false;
-        this.hiddenWhenLocked = jsonNode["hidden"];
+        this.readOnly = true;
         if (this.isFile) { this.fullName += `\.${this.gameExt}`; }
-        else { this.children = new Map(); }
+        // else { this.children = new Map(); }
+
+        this.hash = hash;
+        if (hash == undefined)
+            this.hash = this.generateRuntimeHash()
+
+        if (this.parent != undefined) {
+            this.parent.addChild(this);
+        }
     }
 
     getClassName(context) {
@@ -271,6 +315,12 @@ class PathNode {
 
     isVisible(context) {
         return this.hasAccess(context) || !this.hiddenWhenLocked;
+    }
+
+    addChild(node) {
+        if (this.children == undefined)
+            this.children = new Map();
+        this.children.set(node.name.toLowerCase(), node)
     }
 
     getChild(node) {

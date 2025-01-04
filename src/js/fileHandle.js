@@ -17,6 +17,9 @@ class FileHandle {
 
         Global.log(`Opening ${node.fullName} at ${node.pathLink}`);
 
+        if (!handle.requiresFileLoad)
+            return handle.read(node);
+
         const file = await load(node.hash);
         if (file) {
             Global.log(`Reading file at path ${node.pathLink}.`)
@@ -34,6 +37,9 @@ class FileHandle {
 
         Global.log(`Examining ${node.fullName} at ${node.pathLink}`);
 
+        if (!handle.requiresFileLoad)
+            return handle.examine(node);
+
         const file = await load(node.hash);
         if (file) {
             Global.log(`Examining file at path ${node.pathLink}.`)
@@ -47,6 +53,7 @@ class FileHandle {
 
     constructor(extensions) {
         this.extensions = extensions;
+        this.requiresFileLoad = true;
         this.extensions.forEach(key => {
             FileHandle.fileHandles.set(key, this);
         });
@@ -87,6 +94,18 @@ function fileHandleFactory(properties) {
 
     return new FileHandleProxy();
 }
+
+const RuntimePayloadHandle = fileHandleFactory({
+    extensions: ['runtime'],
+    requiresFileLoad: false,
+    read: function (node) {
+        return node.runtimePayload;
+    },
+
+    examine: function (node) {
+        return node.examine;
+    },
+})
 
 const TextHandle = fileHandleFactory({
     extensions: ['txt', 'html'],
