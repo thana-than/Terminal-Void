@@ -1,4 +1,4 @@
-import ReactDOM from 'react-dom';
+import React from 'react';
 import Global from '../js/global';
 import init from '../js/init.js'
 import Data from '../js/gameData';
@@ -26,12 +26,27 @@ afterEach(() => {
     Terminal.clear();
 });
 
-// Extract raw text content from the JSX output
-const getText = (jsx) => {
-    const div = document.createElement('div');
-    ReactDOM.render(jsx, div);
-    return div.textContent || div.innerText || '';
-};
+//* Extract raw text content from the fragment
+const getText = (fragment) => {
+    const extractText = (node) => {
+        if (typeof node === "string" || typeof node === "number") {
+            return node.toString();
+        }
+
+        if (React.isValidElement(node)) {
+            return React.Children.toArray(node.props.children)
+                .map(extractText)
+                .join("");
+        }
+
+        if (Array.isArray(node)) {
+            return node.map(extractText).join("");
+        }
+
+        return "";
+    };
+    return extractText(fragment);
+}
 
 test('Permission failure - via CD command.', async () => {
     const response = getText(await Terminal.sendCommand("cd dev"))
