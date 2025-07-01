@@ -71,10 +71,12 @@
   },
   "homepage": "https://github.com/thana-than/Terminal-Void#readme",
   "dependencies": {
+    "@react-three/fiber": "^9.1.4",
     "dompurify": "^3.1.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "save-dev": "^0.0.1-security",
+    "three": "^0.178.0",
     "uuid": "^10.0.0"
   }
 }
