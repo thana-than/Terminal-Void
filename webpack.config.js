@@ -44,7 +44,12 @@ module.exports = {
                 include: /\.module\.css$/
             },
             {
-                test: /\.(png|jpe?g|gif|svg)$/,
+                test: /\.(glsl|vs|fs|vert|frag)$/,
+                use: 'raw-loader',
+                exclude: /node_modules/
+            },
+            {
+                test: /\.(png|jpe?g|gif|svg|mp4|webm|ogg)$/,
                 use: [
                     {
                         loader: 'file-loader',
