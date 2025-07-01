@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "python build_gameFolders.py --dev && npm-run-all --parallel watch:webpack watch:server watch:browser",
-    "godmode": "cross-env GODMODE=true npm start",
+    "godmode": "cross-env GODMODE=true STARTCOMMAND=$npm_config_startcommand  npm start",
     "test": "jest",
     "dev": "python build_gameFolders.py --dev && webpack --mode=development",
     "build": "python build_gameFolders.py && webpack --mode=production",

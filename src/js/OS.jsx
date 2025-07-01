@@ -1,3 +1,4 @@
+import Global from './global';
 import React, { useState, useEffect, useRef } from 'react';
 import Terminal from "./terminal";
 import '../css/os.css'
@@ -58,6 +59,11 @@ export default function OS() {
         baseTerminal = Terminal;
         updateOutput = (newOut) => { setOutput(newOut); }
         runProgram(baseTerminal);
+        if (Global.START_COMMAND) {
+            console.log("SENDING COMMAND " + Global.START_COMMAND);
+            baseTerminal.sendCommand(Global.START_COMMAND);
+        }
+
         initialized = true;
     }
 

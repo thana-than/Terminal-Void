@@ -75,7 +75,8 @@ module.exports = {
     },
     plugins: [
         new webpack.DefinePlugin({
-            'process.env.GODMODE': JSON.stringify(process.env.GODMODE)
+            'process.env.GODMODE': JSON.stringify(process.env.GODMODE),
+            'process.env.STARTCOMMAND': JSON.stringify(process.env.STARTCOMMAND)
         }),
         new HtmlWebpackPlugin({
             template: './src/index.html',
