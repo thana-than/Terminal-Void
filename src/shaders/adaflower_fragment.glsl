@@ -33,16 +33,29 @@ float scanlines(float x, float repeat, float modValue)
     return mod(x, modValue);
 }
 
+vec3 chromaAbb(sampler2D tex, vec2 uv, vec2 offset) {
+    vec3 color = vec3(
+        texture2D(tex, clamp(uv - offset, vec2(0.0), vec2(1.0))).r,
+        texture2D(tex, uv).g,
+        texture2D(tex, clamp(uv + offset, vec2(0.0), vec2(1.0))).b
+    );
+    return color;
+}
+
 void main()
 {
-    float t = sin(1.5 + uTime * hueSpeed) *.5 + .5;
-    vec2 scan = vec2(scanlines(vUv.y + uTime * 0.05, 5.0, 3.0));
-
     float mouse = sin(1.0 - smoothstep(0.0, .3, distance(uMouse, vUv)));
+    vec2 uv = vUv;
+    uv = mod(uv - sin((uMouse - .5) * mouse) * .05, 1.0);
 
-    vec3 videoColor = 1.0 - texture2D(videoTex, vUv).rgb + mouse;
-    vec3 textColor = texture2D(textTex, vUv - scan * .001).rgb;
-    vec3 flowerColor = texture2D(flowerTex, vUv - scan * .01).rgb;
+    float t = sin(1.5 + uTime * hueSpeed) *.5 + .5;
+    vec2 scan = vec2(scanlines(uv.y + uTime * 0.05, 5.0, 3.0));
+
+    vec2 abbUv = vec2(cos(uTime) * 0.02,sin(uTime) * 0.001) + uMouse * mouse * 0.01;
+    vec3 videoColor = 1.0 - chromaAbb(videoTex, uv, abbUv).rgb + mouse;
+    vec3 textColor = texture2D(textTex, uv - scan * .001).rgb;
+    vec2 videoAbbOffset = videoColor.xy * 0.075;
+    vec3 flowerColor = chromaAbb(flowerTex, uv - scan * .01, abbUv + videoAbbOffset).rgb;
 
     textColor *= max(videoColor.x,(1.0 - t));
 
