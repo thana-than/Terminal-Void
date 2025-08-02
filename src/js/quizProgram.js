@@ -52,6 +52,7 @@ export class Quiz extends CLI {
         this.completeMessage = completeMessage;
         this.startMessage = prompts[0].prompt;
         this.allowAutoComplete = false;
+        this.instanced = true;
     }
 
     async sendCommand(command) {
