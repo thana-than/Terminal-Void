@@ -2,9 +2,6 @@ import React from "react";
 import { Quiz, QuizPrompt } from "/src/js/quizProgram";
 import Data from '/src/js/gameData'
 
-//TODO press any button to exit on prompt finish
-//TODO start at top
-
 const eulaHTML = <div className="textFile">
     <h1 id="eula-end-user-license-agreement">END USER LICENSE AGREEMENT</h1>
     <p>Last updated: July 20, 2068</p>
