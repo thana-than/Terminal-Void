@@ -106,15 +106,25 @@ export const NO = {
     }
 };
 
-const EULA = new Quiz([
-    new QuizPrompt(eulaHTML, [
-        { keys: ['YES', 'y'], isCorrect: true, response: "GOOD!" },
-        { keys: ['NO', 'n'], isCorrect: false, response: "BAD!" },
-    ]),
-    // new QuizPrompt("TESTING 2", [
-    //     { keys: ['YES', 'y'], isCorrect: true, response: "GOOD!", invoke: function () { Data.accessKeys.add('CLIENT') } }, //? invoke is temporary to showcase that we can do it for specific answers
-    //     { keys: ['NO', 'n'], isCorrect: false, response: "BAD!" },
-    // ]),
+
+// TODO handle a way to make the "next" reference circular (right now TEST is undefined on compile for EULAPROMPT)
+const EULAPROMPT = new QuizPrompt(eulaHTML, [
+    { keys: ['YES', 'y'], response: "GOOD!" },
+    { keys: ['NO', 'n'], next: TEST, response: "BAD!" },
 ]);
+
+
+const TEST = new QuizPrompt('hiii', [
+    { keys: ['YES', 'y'], response: "GOOD!" },
+    { keys: ['NO', 'n'], next: EULAPROMPT, response: "BAD!" },
+]);
+
+
+const EULA = new Quiz(EULAPROMPT);
+
+// new QuizPrompt("TESTING 2", [
+//     { keys: ['YES', 'y'], response: "GOOD!", invoke: function () { Data.accessKeys.add('CLIENT') } }, //? invoke is temporary to showcase that we can do it for specific answers
+//     { keys: ['NO', 'n'], response: "BAD!" },
+// ]),);
 
 export default EULA
