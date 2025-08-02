@@ -31,6 +31,8 @@ export default class CLI extends Program {
 
     themeStyle = "cliTheme";
 
+
+    allow_printCulling = true;
     cullMax_commandBlocks = 100;
     cullMax_scrollHeight = 5000;
 
@@ -370,14 +372,16 @@ export default class CLI extends Program {
         let cullCount = 0;
         let scrollHeight = outputDiv.scrollHeight;
 
-        while (scrollHeight > this.cullMax_scrollHeight) {
-            const elementHeight = document.getElementById(this.blocks[cullCount].props.id).offsetHeight;
-            scrollHeight -= elementHeight;
-            cullCount++;
-        }
+        if (this.allow_printCulling) {
+            while (this.cullMax_scrollHeight >= 0 && scrollHeight > this.cullMax_scrollHeight) {
+                const elementHeight = document.getElementById(this.blocks[cullCount].props.id).offsetHeight;
+                scrollHeight -= elementHeight;
+                cullCount++;
+            }
 
-        while (this.blocks.length - cullCount > this.cullMax_commandBlocks) {
-            cullCount++;
+            while (this.cullMax_commandBlocks >= 0 && this.blocks.length - cullCount > this.cullMax_commandBlocks) {
+                cullCount++;
+            }
         }
 
         if (cullCount > 0) {

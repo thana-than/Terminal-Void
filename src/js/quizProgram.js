@@ -2,13 +2,14 @@ import Interpreter, { BASE_COMMANDS } from './command.js';
 import CLI from "./cliProgram";
 
 //TODO:
-//! Clean data on exit (temp/instance state, maybe define temp/instance object in command?) (maybe we just create a new instance every time this is run??) (make optional)
+/////! Clean data on exit (temp/instance state, maybe define temp/instance object in command?) (maybe we just create a new instance every time this is run??) (make optional)
 //! Exiting on fail state (make optional)
 //! State machine - Next prompt branching instead of simple indexing (provided by QuizPrompt answers) (should just index if undefined) (exits on null)
 //! Provide example quiz in dev folder
 //! Custom invokes for quiz success or failures
 //! press any button to exit on prompt finish
 //! start at top
+//! dont clear on next prompt?
 
 export class QuizPrompt {
     constructor(prompt, answers) {
@@ -50,12 +51,15 @@ export class Quiz extends CLI {
         this.prompts = prompts;
         this.stage = 0;
         this.completeMessage = completeMessage;
+        this.reprintPromptOnIncorrect = false;
         this.startMessage = prompts[0].prompt;
         this.allowAutoComplete = false;
         this.instanced = true;
+        this.allow_printCulling = false; //* Allows unlimited printing (could be dangrerous)
     }
 
     async sendCommand(command) {
+        console.log("Quiz: sendCommand", command);
         if (this.isCompleted())
             return;
 
@@ -65,8 +69,10 @@ export class Quiz extends CLI {
 
         if (response.isCorrect)
             this.nextPrompt();
-        else
-            this.printCurrentPrompt();
+        else {
+            if (this.reprintPromptOnIncorrect)
+                this.printCurrentPrompt();
+        }
     }
 
     isCompleted() {
