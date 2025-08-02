@@ -5,7 +5,6 @@ export default class Program {
     closeCallback = null;
     themeStyle = "programTheme";
     canCloseOnKey = true
-    instanced = false; //* If true, the program will be re-instanced every time it is run.
 
     event_keyDown(event) {
         if (this.testCloseKey(event))

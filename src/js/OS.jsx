@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Terminal from "./terminal";
 import '../css/os.css'
 import '../css/fonts.css'
-import _ from 'lodash';
 
 let initialized = false;
 let baseTerminal;
@@ -43,11 +42,6 @@ export function runProgram(program) {
 
     if (program == null)
         program = baseTerminal;
-
-    if (program.instanced) {
-        program = _.clone(program);
-        console.log("Reinstanced program: " + program.name);
-    }
 
     runningProgram = program;
     runningProgram.refreshCallback = refreshCallback;

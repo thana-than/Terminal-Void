@@ -160,6 +160,9 @@ const JSHandle = fileHandleFactory({
 const JSXHandle = fileHandleFactory({
     extensions: ['jsx'],
     read: async function (node, file) {
+        if (typeof file === 'function')
+            file = file(); //* If the file is a function, call it to get the component
+
         const fileType = file.prototype || file;
         if (fileType instanceof Program) {
             const program = file.prototype ? new file() : file; //*Either creates a new instance if this is a type, or just grabs the existing instance

@@ -1,5 +1,5 @@
 import React from "react";
-import { Quiz, QuizPrompt } from "/src/js/quizProgram";
+import { Quiz, Prompt } from "/src/js/quizProgram";
 import Data from '/src/js/gameData'
 
 const eulaHTML = <div className="textFile">
@@ -92,39 +92,13 @@ const eulaHTML = <div className="textFile">
     <p>Enter 'accept' into your terminal to agree to these terms.</p>
 </div>
 
-export const YES = {
-    keys: ['YES', 'y', 'accept'],
-    invoke: function (params, context) {
-        return "GOOD!"
-    }
-};
-
-export const NO = {
-    keys: ['NO', 'n', 'deny'],
-    invoke: function (params, context) {
-        return "BAD!"
-    }
-};
-
-
-// TODO handle a way to make the "next" reference circular (right now TEST is undefined on compile for EULAPROMPT)
-const EULAPROMPT = new QuizPrompt(eulaHTML, [
-    { keys: ['YES', 'y'], response: "GOOD!" },
-    { keys: ['NO', 'n'], next: TEST, response: "BAD!" },
+const EULA_PROMPT = new Prompt(eulaHTML, [
+    { keys: ['yes', 'y', 'accept'], response: "GOOD!" },
+    { keys: ['no', 'n', 'deny'], response: "BAD!" },
 ]);
 
-
-const TEST = new QuizPrompt('hiii', [
-    { keys: ['YES', 'y'], response: "GOOD!" },
-    { keys: ['NO', 'n'], next: EULAPROMPT, response: "BAD!" },
-]);
-
-
-const EULA = new Quiz(EULAPROMPT);
-
-// new QuizPrompt("TESTING 2", [
-//     { keys: ['YES', 'y'], response: "GOOD!", invoke: function () { Data.accessKeys.add('CLIENT') } }, //? invoke is temporary to showcase that we can do it for specific answers
-//     { keys: ['NO', 'n'], response: "BAD!" },
-// ]),);
+//* Method so that it re-instantiates the quiz every time it is run.
+// TODO Maybe we turn this off for a eula completed message? idk. we'll have to fix some bugs
+const EULA = () => new Quiz(EULA_PROMPT);
 
 export default EULA
