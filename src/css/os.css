@@ -107,6 +107,10 @@ img {
     font-size: 14px;
 }
 
+.tiny {
+    font-size: 10px;
+}
+
 .text {
     margin-left: 40px;
 }

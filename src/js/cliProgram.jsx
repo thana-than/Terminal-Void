@@ -22,6 +22,7 @@ export default class CLI extends Program {
     ready_pressToClose = false;
     queue_pressToClose = false;
     queue_snapToBottom = false;
+    queue_snapTotop = true;
 
     scroll_target
 
@@ -136,6 +137,10 @@ export default class CLI extends Program {
             }
             else if (payload.response) {
                 response = payload.response;
+            }
+
+            if (typeof response === 'function') {
+                response = response();
             }
 
             this.printCommand(command, response);
@@ -331,10 +336,18 @@ export default class CLI extends Program {
     async autoScroll() {
         var outputDiv = document.getElementById('output');
         const autoScrollTargetDiv = document.getElementById(this.autoScrollTargetDivID);
-        //* If we have queued to just snap to the bottom, lets do that and get outa here
-        if (this.queue_snapToBottom || !autoScrollTargetDiv) {
-            outputDiv.scrollTop = outputDiv.scrollHeight;
+
+        //* If we have queued to just snap to the top or bottom, lets do that and get outa here
+        let snapQueued = this.queue_snapTotop || this.queue_snapToBottom || !autoScrollTargetDiv;
+        if (snapQueued) {
+            if (this.queue_snapTotop) {
+                outputDiv.scrollTop = 0;
+            } else {
+                outputDiv.scrollTop = outputDiv.scrollHeight;
+            }
+
             this.queue_snapToBottom = false;
+            this.queue_snapTotop = false;
             return;
         }
 

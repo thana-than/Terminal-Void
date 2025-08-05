@@ -172,10 +172,11 @@ const JSXHandle = fileHandleFactory({
                 await new Promise(resolve => setTimeout(resolve, 100)); //*Wait 100 ms in loop while waiting for program to stop
             }
 
-            if (program.postMessage)
-                return program.postMessage;
+            let message = program.postMessage;
+            if (message === undefined)
+                message = `Finished running ${node.fullName}`;
 
-            return `Finished running ${node.fullName}`;
+            return message;
         }
 
         try {
