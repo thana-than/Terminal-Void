@@ -68,6 +68,21 @@ img {
     margin-left: 0;
 }
 
+.directoryList a,
+.directoryHead {
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: text-decoration 0.2s;
+}
+
+.directoryList a:hover,
+.directoryList a:focus,
+.directoryHead:hover,
+.directoryHead:focus {
+    text-decoration: underline;
+}
+
 .directoryList span {
     width: 1em;
     margin-right: 10px;

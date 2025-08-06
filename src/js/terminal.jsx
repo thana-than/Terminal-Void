@@ -62,6 +62,10 @@ export const TerminalCommands = {
             if (!params || params.length == 0)
                 params = ['./']
 
+            //* We make sure we have a CLI to provide links in our list method
+            //TODO functionality for if we want to use the context.cli to provide links
+            const linkCLI = Terminal; //(context && context.cli) || Terminal
+
             const contents = [];
             params.forEach(path => {
                 const result = Directory.get(path, context);
@@ -88,15 +92,37 @@ export const TerminalCommands = {
                 const arr = Array.from(dirNode.children.values()).filter((node) => (node.isVisible(context)));
                 arr.sort((a, b) => { return a.isFile - b.isFile; });
 
+                function getNavCommand(node) {
+                    const prefix = node.isFile ? TerminalCommands.RUN.keys[0] : TerminalCommands.OPEN.keys[0];
+                    const path = node.path(context);
+                    const navCommand = `${prefix} "${path}"`;
+                    return navCommand;
+                }
+
+                function buildHeader() {
+                    const parents = dirNode.getParents(context);
+                    const path = parents.map((node, idx) =>
+                        <React.Fragment key={node.fullName}>
+                            <a className='directoryHead' onClick={() => linkCLI.sendCommand(getNavCommand(node))}>
+                                {node.fullName}
+                            </a>
+                            {idx < parents.length - 1 ? '/' : ''}
+                        </React.Fragment>
+                    )
+                    return <>⬎ {path}:</>
+                }
+
                 return (
                     <div>
-                        ⬎ {dirNode.path()}:
+                        {buildHeader()}
                         <ul className='directoryList'>
                             {arr.map(node => {
                                 const icon = node.isFile ? <File text='' /> : <Folder text='' />;
                                 return (<li className={node.getClassName(context)} key={uuidv4()}>
-                                    <span>{icon}</span>
-                                    {node.fullName}
+                                    <a onClick={() => linkCLI.sendCommand(getNavCommand(node))}>
+                                        <span>{icon}</span>
+                                        {node.fullName}
+                                    </a>
                                 </li>);
                             })}
                         </ul>
