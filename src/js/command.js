@@ -29,9 +29,9 @@ export const BASE_COMMANDS = {
 
                     if (Interpreter.commandIsValid(command)) {
                         if (command.verboseHelp)
-                            str.push(this.getVerboseHelpBlock(command));
+                            str.push(this.getVerboseHelpBlock(command, context));
                         else if (command.help)
-                            str.push(this.getHelpBlock(command));
+                            str.push(this.getHelpBlock(command, context));
                     }
                     else {
                         str.push(<div key={uuidv4()}>Help - Parameter {param} not recognized as a command</div>);
@@ -44,20 +44,29 @@ export const BASE_COMMANDS = {
                     if (command == this)
                         str.push(<div key={uuidv4()} className='subHead'>{this.help}</div>);
                     else if (context.interpreter.HasAccess(command, context.superuser) && command.help)
-                        str.push(this.getHelpBlock(command));
+                        str.push(this.getHelpBlock(command, context));
                 });
             }
 
             return <>{str}</>;
         },
-        getHelpBlock: function (command) {
-            return (<div key={uuidv4()}>{this.prefix(command)} <span className='small'>{command.help}</span></div>);
+        getHelpBlock: function (command, context) {
+            return (<div key={uuidv4()}>{this.prefix(command, context)} <span className='small'>{command.help}</span></div>);
         },
-        getVerboseHelpBlock: function (command) {
-            return (<div key={uuidv4()}>{this.prefix(command)}<br></br>{command.verboseHelp()}</div>);
+        getVerboseHelpBlock: function (command, context) {
+            return (<div key={uuidv4()}>{this.prefix(command, context)}<br></br>{command.verboseHelp()}</div>);
         },
-        prefix: function (command) {
-            return <>{command.keys[0]}<span className='subHead'> [{command.keys.join(', ')}]</span>:</>
+        prefix: function (command, context) {
+            const keys = command.keys.map((key, idx) =>
+                <React.Fragment key={key}>
+                    <a className="cliLink" onClick={() => this.keyLink(key, context)}>{key}</a>
+                    {idx < command.keys.length - 1 ? ', ' : ''}
+                </React.Fragment>
+            )
+            return <><a className="cliLink" onClick={() => this.keyLink(command.keys[0], context)}>{command.keys[0]}</a><span className='subHead'> [{keys}]</span>:</>
+        },
+        keyLink(key, context) {
+            return context.cli.sendCommand(`help "${key}"`)
         }
     },
 

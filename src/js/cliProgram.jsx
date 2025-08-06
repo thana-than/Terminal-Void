@@ -317,6 +317,11 @@ export default class CLI extends Program {
         this.clearAutoComplete(autoCompleteDiv);
     }
 
+    setTextBox(string) {
+        const inputElement = document.getElementById('input');
+        inputElement.value = string;
+    }
+
     clearAutoComplete(autoCompleteDiv) {
         this.autoCompleteState.words = [];
         this.autoCompleteState.index = 0;

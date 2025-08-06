@@ -68,18 +68,18 @@ img {
     margin-left: 0;
 }
 
-.directoryList a,
-.directoryHead {
+.cliLink a,
+.cliLink {
     cursor: pointer;
     text-decoration: none;
     color: inherit;
     transition: text-decoration 0.2s;
 }
 
-.directoryList a:hover,
-.directoryList a:focus,
-.directoryHead:hover,
-.directoryHead:focus {
+.cliLink a:hover,
+.cliLink a:focus,
+.cliLink:hover,
+.cliLink:focus {
     text-decoration: underline;
 }
 

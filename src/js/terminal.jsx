@@ -103,7 +103,7 @@ export const TerminalCommands = {
                     const parents = dirNode.getParents(context);
                     const path = parents.map((node, idx) =>
                         <React.Fragment key={node.fullName}>
-                            <a className='directoryHead' onClick={() => linkCLI.sendCommand(getNavCommand(node))}>
+                            <a className='directoryHead cliLink' onClick={() => linkCLI.sendCommand(getNavCommand(node))}>
                                 {node.fullName}
                             </a>
                             {idx < parents.length - 1 ? '/' : ''}
@@ -119,7 +119,7 @@ export const TerminalCommands = {
                             {arr.map(node => {
                                 const icon = node.isFile ? <File text='' /> : <Folder text='' />;
                                 return (<li className={node.getClassName(context)} key={uuidv4()}>
-                                    <a onClick={() => linkCLI.sendCommand(getNavCommand(node))}>
+                                    <a className="cliLink" onClick={() => linkCLI.sendCommand(getNavCommand(node))}>
                                         <span>{icon}</span>
                                         {node.fullName}
                                     </a>
