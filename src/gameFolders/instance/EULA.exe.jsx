@@ -3,8 +3,9 @@ import { Quiz, Prompt } from "/src/js/quizProgram";
 import UnlockKey from '/src/js/unlockKey';
 
 //* Method so that it re-instantiates the quiz every time it is run.
+const keyUnlock = new UnlockKey('CLIENT');
+
 const EULA = () => {
-    const keyUnlock = new UnlockKey('CLIENT');
     const lastMessage = keyUnlock.has() ? "You have already accepted this agreement." : "Enter 'accept' into your terminal to agree to these terms."
 
     const eulaHTML = <div className="textFile tiny">
@@ -124,6 +125,13 @@ const EULA = () => {
     }
 
     return quiz;
+}
+
+EULA.examine = () => {
+    if (keyUnlock.has())
+        return "These terms have been accepted and ANSIBLE is now ready to access."
+
+    return "This EULA needs to be accepted before any ANSIBLE access is given."
 }
 
 export default EULA
