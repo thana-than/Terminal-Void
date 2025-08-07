@@ -55,6 +55,7 @@ const Art = () => {
 };
 
 const App_AdaFlower = new Application('Flower');
+App_AdaFlower.anyKeyToClose = true;
 App_AdaFlower.examine = () => "\"by Ada\"";
 App_AdaFlower.draw = () => {
     return (

@@ -9,6 +9,8 @@ export default class Application extends Program {
     static DefaultInputTestMessage = "PRESS A KEY";
     caseSensitiveInputs = true;
     activeInputs = new Set()
+    anyKeyToClose = false;
+    pressToCloseQueued = false;
 
     message = this.DefaultInputTestMessage;
     draw() {
@@ -17,6 +19,10 @@ export default class Application extends Program {
                 <p>{this.message}</p>
             </div>
         );
+    }
+
+    pressToClose() {
+        this.pressToCloseQueued = true;
     }
 
     updateMessage() {
@@ -40,8 +46,11 @@ export default class Application extends Program {
 
 
     onKeyDown(event) {
-        if (event.key == "Escape")
+        if (event.key == "Escape" || this.anyKeyToClose || this.pressToCloseQueued) {
+            this.pressToCloseQueued = false;
             this.close();
+            event.preventDefault();
+        }
 
         let key = this.processKeyId(event);
 
