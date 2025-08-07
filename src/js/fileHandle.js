@@ -180,8 +180,7 @@ const JSXHandle = fileHandleFactory({
         }
 
         try {
-            const Component = file;
-            return <Component />;
+            return file;
         } catch (error) {
             console.error(`Error loading JSX component for node ${node}:`, error);
             throw error;
