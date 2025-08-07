@@ -16,9 +16,12 @@ export default class CLI extends Program {
     clearedBlocks = []
     commandRunning = false;
     startMessage = <>Welcome!</>;
-    pressToCloseMessage = <>Press any key to continue.</>
+    pressToCloseInputBox = "Press any key to continue."
+    pressToCloseMessage = <>{this.pressToCloseInputBox}</>
     initialized = false;
     showSendButton = true;
+
+    pressToClose_excludedKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
 
     ready_pressToClose = false;
     queue_pressToClose = false;
@@ -155,39 +158,51 @@ export default class CLI extends Program {
         return payload;
     }
 
+    focusOutputDiv() {
+        let outputDiv = document.getElementById('output');
+        outputDiv?.focus({ focusVisible: false });
+    }
+
+    close() {
+        //* Re-enable the inputElement (in case we disabled it)
+        let inputElement = document.getElementById('input');
+        inputElement.disabled = false;
+
+        super.close();
+    }
+
     onKeyDown(event) {
-        console.log(event);
         if (this.commandRunning) {
             event.preventDefault();
             return;
         }
-        console.log(event.key);
 
-        if (this.ready_pressToClose) {
+        if (this.ready_pressToClose && !this.pressToClose_excludedKeys.has(event.key)) {
             this.ready_pressToClose = false;
             this.close();
+            event.preventDefault();
         }
 
-        const inputElement = document.getElementById('input');
+        let inputElement = document.getElementById('input');
         const autoCompleteDiv = document.getElementById('autoComplete');
+        const inputElementFocussed = inputElement == document.activeElement;
 
-        if (event.key === 'Enter') {
-            const command = inputElement.value;
-            inputElement.value = '';
+        if (this.isUserAttemptingAutoComplete(event, inputElement)) { //* Autocomplete
+            this.assignAutoComplete(inputElement, autoCompleteDiv);
+            event.preventDefault();
+        }
+        else if (event.key === 'Tab') { //* Tab between the output block and the input element
+            if (inputElementFocussed) {
+                this.focusOutputDiv();
+            }
+            else
+                inputElement.focus();
+            event.preventDefault();
+        }
+        else if (event.key === 'ArrowUp') { //* Scroll up in command history
+            if (!inputElementFocussed)
+                return;
 
-            if (!isWhitespaceString(command) && this.commandHistory[this.commandHistory.length - 1] != command)
-                this.commandHistory.push(command);
-
-            //* If we are using a max size for our command history, enforce it by removing the first element of the history (if over max)
-            if (this.commandHistory_maxSize > 0 && this.commandHistory.length > this.commandHistory_maxSize)
-                this.commandHistory.shift();
-
-            this.historyIndex = this.commandHistory.length;
-
-            this.clearAutoComplete(autoCompleteDiv);
-            this.commandBuffer = '';
-            this.sendCommand(command);
-        } else if (event.key === 'ArrowUp') {
             const wordsLen = this.autoCompleteState.words.length;
             if (wordsLen > 0) {
                 this.autoCompleteState.index = (this.autoCompleteState.index - 1 + wordsLen) % wordsLen;
@@ -202,7 +217,10 @@ export default class CLI extends Program {
                 this.clearAutoComplete(autoCompleteDiv);
             }
             event.preventDefault();
-        } else if (event.key === 'ArrowDown') {
+        } else if (event.key === 'ArrowDown') { //* Scroll down in command history
+            if (!inputElementFocussed)
+                return;
+
             const wordsLen = this.autoCompleteState.words.length;
             if (wordsLen > 0) {
                 this.autoCompleteState.index = (this.autoCompleteState.index + 1) % this.autoCompleteState.words.length;
@@ -220,9 +238,22 @@ export default class CLI extends Program {
             }
 
             event.preventDefault();
-        } else if (this.isUserAttemptingAutoComplete(event, inputElement)) {
-            this.assignAutoComplete(inputElement, autoCompleteDiv);
-            event.preventDefault();
+        } else if (event.key === 'Enter') { //* Submit input
+            const command = inputElement.value;
+            inputElement.value = '';
+
+            if (!isWhitespaceString(command) && this.commandHistory[this.commandHistory.length - 1] != command)
+                this.commandHistory.push(command);
+
+            //* If we are using a max size for our command history, enforce it by removing the first element of the history (if over max)
+            if (this.commandHistory_maxSize > 0 && this.commandHistory.length > this.commandHistory_maxSize)
+                this.commandHistory.shift();
+
+            this.historyIndex = this.commandHistory.length;
+
+            this.clearAutoComplete(autoCompleteDiv);
+            this.commandBuffer = '';
+            this.sendCommand(command);
         }
     }
 
@@ -231,13 +262,27 @@ export default class CLI extends Program {
     }
 
     isUserAttemptingAutoComplete(event, inputElement) {
-        if (event.key === 'Tab')
-            return true;
+        if (event.code === 'simulated')
+            return false;
 
-        if (event.key === 'ArrowRight' && this.hasAutoComplete() && inputElement.selectionStart >= inputElement.value.length)
-            return true;
+        const validKeyPress = event.key === 'Tab' || event.key === 'ArrowRight' || event.key === 'Enter';
+        if (!validKeyPress)
+            return false;
 
-        return false;
+        if (!this.hasAutoComplete())
+            return;
+
+        const cursorAtEndOfText = inputElement.selectionStart >= inputElement.value.length;
+        if (!cursorAtEndOfText)
+            return false;
+
+        //* Checks if the word we are focussed on in the autocomplete is already completed, if so we don't need to autocomplete
+        const commandSplits = this.getSplits(inputElement.value);
+        const word = commandSplits[commandSplits.length - 1];
+        if (word !== undefined && word.toLowerCase().trim() == this.autoCompleteState.words[this.autoCompleteState.index].word)
+            return false;
+
+        return true;
     }
 
     runAutoComplete(inputDiv) {
@@ -304,10 +349,10 @@ export default class CLI extends Program {
         return commandSplits;
     }
 
-    assignAutoComplete(inputElement, autoCompleteDiv) {
+    getLastCompleteWordInInput(inputElement) {
         let text = inputElement.value;
         if (text == '' || !this.hasAutoComplete())
-            return;
+            return undefined;
 
         const commandSplits = this.getSplits(text);
         const last = commandSplits[commandSplits.length - 1];
@@ -315,6 +360,13 @@ export default class CLI extends Program {
 
         if (lastLen > 0)
             text = text.slice(0, -last.length);
+        return text;
+    }
+
+    assignAutoComplete(inputElement, autoCompleteDiv) {
+        const text = this.getLastCompleteWordInInput(inputElement);
+        if (text === undefined)
+            return;
 
         inputElement.value = `${text}${this.autoCompleteState.words[this.autoCompleteState.index].word}`;
         this.clearAutoComplete(autoCompleteDiv);
@@ -419,6 +471,11 @@ export default class CLI extends Program {
 
     run() {
         this.queue_snapToBottom = true;
+        let inputElement = document.getElementById('input');
+        if (inputElement) {
+            inputElement.disabled = false;
+            inputElement.focus();
+        }
     }
 
     preDrawStep() {
@@ -428,7 +485,11 @@ export default class CLI extends Program {
         if (this.queue_pressToClose) {
             this.queue_pressToClose = false;
             this.ready_pressToClose = true;
+            let inputElement = document.getElementById('input');
+            inputElement.value = this.pressToCloseInputBox;
+            inputElement.disabled = true;
             this.print(<div>{this.pressToCloseMessage}</div>, false, false);
+            this.focusOutputDiv();
         }
     }
 
@@ -437,14 +498,14 @@ export default class CLI extends Program {
 
         return (
             <div className="cli">
-                <div id="output">
+                <div tabIndex="1" id="output">
                     {this.blocks.map(block => (
                         <React.Fragment key={block.props.id}>{block}</React.Fragment>
                     ))}
                 </div>
                 <div className='inputBox'>
-                    <input type="text" id="input" onChange={this.onInputChanged} autoFocus></input>
-                    <button className="sendButton" onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter' }))}>
+                    <input type="text" tabIndex="2" id="input" onChange={this.onInputChanged} autoFocus></input>
+                    <button className="sendButton" tabIndex="-1" onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'simulated' }))}>
                         <svg viewBox="0 0 1080 1080" className="arrowIcon">
                             <path d="M216.711,216.711L863.289,540L216.711,863.289" />
                         </svg>

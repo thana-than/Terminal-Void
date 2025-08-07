@@ -99,7 +99,7 @@ const EULA = () => {
 
     const invalidPrompt = <><p>Invalid entry.</p><p>{lastMessage}</p></>;
     const accept = {
-        keys: ['yes', 'y', 'accept'],
+        keys: ['yes', 'y', 'accept', 'acknowledge', 'approve', 'affirm', 'sure'],
         response: () => {
             let keyMessage = unlockKey();
             quiz.postMessage = <>
@@ -113,9 +113,17 @@ const EULA = () => {
         }
     }
 
-    const EULA_PROMPT = new Prompt(eulaHTML, [accept], invalidPrompt);
+    const reject = {
+        keys: ['no', 'n', 'reject', 'deny'],
+        response: () => {
+            return <>EULA terms have been rejected. You cannot utilize Ansible without accepting the terms.</>
+        }
+    }
+
+    const EULA_PROMPT = new Prompt(eulaHTML, [accept, reject], invalidPrompt);
 
     let quiz = new Quiz(EULA_PROMPT);
+    quiz.allowAutoComplete = true;
     quiz.postMessage = "EULA exited without accepting terms. Please re-open EULA.exe and try again." //* Default post
 
     const unlockKey = () => {

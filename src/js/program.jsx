@@ -23,12 +23,15 @@ export default class Program {
             key == "escape"
         // || key == "c" && event.ctrlKey; //? was a good idea initially but would remove copy paste functionality from game
 
-        if (exitRequested)
+        if (exitRequested) {
             this.close();
+            event.preventDefault();
+        }
+
         return exitRequested;
     }
 
-    onKeyDown() { this.close(); }
+    onKeyDown(event) { this.close(); event.preventDefault(); }
     onKeyUp() { }
 
     refresh() {
