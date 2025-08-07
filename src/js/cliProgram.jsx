@@ -166,14 +166,27 @@ export default class CLI extends Program {
             this.close();
         }
 
-        const inputElement = document.getElementById('input');
+        let inputElement = document.getElementById('input');
         const autoCompleteDiv = document.getElementById('autoComplete');
+        const inputElementFocussed = inputElement == document.activeElement;
 
         if (this.isUserAttemptingAutoComplete(event, inputElement)) { //* Autocomplete
             this.assignAutoComplete(inputElement, autoCompleteDiv);
             event.preventDefault();
         }
+        else if (event.key === 'Tab') { //* Tab between the output block and the input element
+            if (inputElementFocussed) {
+                let outputDiv = document.getElementById('output');
+                outputDiv?.focus({ focusVisible: false });
+            }
+            else
+                inputElement.focus();
+            event.preventDefault();
+        }
         else if (event.key === 'ArrowUp') { //* Scroll up in command history
+            if (!inputElementFocussed)
+                return;
+
             const wordsLen = this.autoCompleteState.words.length;
             if (wordsLen > 0) {
                 this.autoCompleteState.index = (this.autoCompleteState.index - 1 + wordsLen) % wordsLen;
@@ -189,6 +202,9 @@ export default class CLI extends Program {
             }
             event.preventDefault();
         } else if (event.key === 'ArrowDown') { //* Scroll down in command history
+            if (!inputElementFocussed)
+                return;
+
             const wordsLen = this.autoCompleteState.words.length;
             if (wordsLen > 0) {
                 this.autoCompleteState.index = (this.autoCompleteState.index + 1) % this.autoCompleteState.words.length;
@@ -233,10 +249,7 @@ export default class CLI extends Program {
         if (event.code === 'simulated')
             return false;
 
-        if (event.key === 'Tab')
-            return true;
-
-        if ((event.key === 'ArrowRight' || event.key === 'Enter') && this.hasAutoComplete() && inputElement.selectionStart >= inputElement.value.length)
+        if ((event.key === 'Tab' || event.key === 'ArrowRight' || event.key === 'Enter') && this.hasAutoComplete() && inputElement.selectionStart >= inputElement.value.length)
             return true;
 
         return false;
@@ -439,14 +452,14 @@ export default class CLI extends Program {
 
         return (
             <div className="cli">
-                <div id="output">
+                <div tabIndex="1" id="output">
                     {this.blocks.map(block => (
                         <React.Fragment key={block.props.id}>{block}</React.Fragment>
                     ))}
                 </div>
                 <div className='inputBox'>
-                    <input type="text" id="input" onChange={this.onInputChanged} autoFocus></input>
-                    <button className="sendButton" onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'simulated' }))}>
+                    <input type="text" tabIndex="2" id="input" onChange={this.onInputChanged} autoFocus></input>
+                    <button className="sendButton" tabIndex="-1" onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'simulated' }))}>
                         <svg viewBox="0 0 1080 1080" className="arrowIcon">
                             <path d="M216.711,216.711L863.289,540L216.711,863.289" />
                         </svg>
