@@ -18,6 +18,7 @@ export default class CLI extends Program {
     startMessage = <>Welcome!</>;
     pressToCloseMessage = <>Press any key to continue.</>
     initialized = false;
+    showSendButton = true;
 
     ready_pressToClose = false;
     queue_pressToClose = false;
@@ -155,10 +156,12 @@ export default class CLI extends Program {
     }
 
     onKeyDown(event) {
+        console.log(event);
         if (this.commandRunning) {
             event.preventDefault();
             return;
         }
+        console.log(event.key);
 
         if (this.ready_pressToClose) {
             this.ready_pressToClose = false;
@@ -441,6 +444,7 @@ export default class CLI extends Program {
                 </div>
                 <div className='inputBox'>
                     <input type="text" id="input" onChange={this.onInputChanged} autoFocus></input>
+                    <button className='sendButton' onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter' }))}></button>
                     <div id='autoComplete'></div>
                 </div>
             </div>

@@ -273,6 +273,17 @@ body,
     padding-top: 10px;
 }
 
+.sendButton {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    height: calc(100% - 10px);
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+    aspect-ratio: 1;
+    margin-top: 10px;
+}
+
 input {
     width: 100%;
     background: #000;
