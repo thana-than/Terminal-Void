@@ -18,6 +18,16 @@ class JumpScare extends Program {
         this.sound.once('end', () => this.sound.unload());
     }
 
+    examine() {
+        if (this.occurred)
+            return "jesus christ.";
+
+        if (this.queued)
+            return "Some jumpscare that was..."
+
+        return "There's definitely a jumpscare in here...";
+    }
+
     playJumpscare() {
         this.occurred = true;
         this.refresh();
