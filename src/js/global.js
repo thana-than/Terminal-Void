@@ -1,18 +1,17 @@
-
-import json from '../.generated/fileStructure.json';
-import { Directory } from './dir.js';
-
 export default class Global {
     static build
     static GOD_MODE = process.env.GODMODE === 'true';
+    //* Command can be passed via running godmode with argument:
+    //* npm run godmode --startcommand="command here"
+    static START_COMMAND = process.env.STARTCOMMAND || '';
 
-    static initialize() {
+    static initialize(build) {
         //*Get build type
-        this.build = json["build"]
+        this.build = build
 
-        //* Build file structure
-        const dirResponse = Directory.generateFileSystem(json["file_structure"]);
-        this.log(dirResponse);
+        // //* Build file structure
+        // const dirResponse = Directory.generateFileSystem(json["file_structure"]);
+        // this.log(dirResponse);
     }
 
     static log(logText) {

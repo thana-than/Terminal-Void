@@ -1,14 +1,18 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import OS from './js/OS.jsx';
-import Global from './js/global';
-
-Global.initialize();
+import init from './js/init.js'
 
 const App = () => (
     <OS />
 );
 
-const container = document.getElementById('root');
-const root = createRoot(container);
-root.render(<App />);
+/* istanbul ignore next @preserve */
+export const startReact = () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    root.render(<App />);
+}
+
+init();
+startReact();

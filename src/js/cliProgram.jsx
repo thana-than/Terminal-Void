@@ -3,6 +3,7 @@ import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Program from "./program";
 import Interpreter from './command';
+import UserPerms from './userperms.js';
 
 function isWhitespaceString(str) { return !/\S/.test(str); }
 
@@ -17,10 +18,12 @@ export default class CLI extends Program {
     startMessage = <>Welcome!</>;
     pressToCloseMessage = <>Press any key to continue.</>
     initialized = false;
+    showSendButton = true;
 
     ready_pressToClose = false;
     queue_pressToClose = false;
     queue_snapToBottom = false;
+    queue_snapTotop = true;
 
     scroll_target
 
@@ -30,14 +33,18 @@ export default class CLI extends Program {
 
     themeStyle = "cliTheme";
 
+
+    allow_printCulling = true;
     cullMax_commandBlocks = 100;
     cullMax_scrollHeight = 5000;
+
+    firstWordFlags = ['commands', 'folders', 'files'];
+    allowAutoComplete = true;
 
     autoCompleteState = {
         words: [],
         index: 0,
     }
-    autoCompleteContext = { cli: this };
 
     constructor(interpreter) {
         super();
@@ -99,17 +106,25 @@ export default class CLI extends Program {
         this.print(<>{commandMarkup}{responseMarkup}</>);
     }
 
+    async interpret(cleaned_command, context) {
+        const interpret = typeof context.interpreter.Run === 'function' ? context.interpreter.Run : context.interpreter;
+        const payload = await interpret.call(context.interpreter, cleaned_command, context);
+        return payload;
+    }
+
+    createContext() {
+        const context = new UserPerms();
+        context.cli = this;
+        context.interpreter = this.interpreter;
+        return context;
+    }
+
     async sendCommand(command) {
         this.commandRunning = true;
         const cleaned_command = command.toLowerCase().trim()
 
-        const context = {
-            cli: this,
-            interpreter: this.interpreter,
-        }
-
-        const interpret = typeof this.interpreter.Run === 'function' ? this.interpreter.Run : this.interpreter;
-        const payload = await interpret.call(this.interpreter, cleaned_command, context);
+        const context = this.createContext();
+        const payload = await this.interpret(cleaned_command, context);
 
         //*Payload parsing
         let response = payload;
@@ -125,6 +140,10 @@ export default class CLI extends Program {
                 response = payload.response;
             }
 
+            if (typeof response === 'function') {
+                response = response();
+            }
+
             this.printCommand(command, response);
         }
         else {
@@ -132,13 +151,17 @@ export default class CLI extends Program {
         }
 
         this.commandRunning = false;
+
+        return payload;
     }
 
     onKeyDown(event) {
+        console.log(event);
         if (this.commandRunning) {
             event.preventDefault();
             return;
         }
+        console.log(event.key);
 
         if (this.ready_pressToClose) {
             this.ready_pressToClose = false;
@@ -218,6 +241,9 @@ export default class CLI extends Program {
     }
 
     runAutoComplete(inputDiv) {
+        if (!this.allowAutoComplete)
+            return;
+
         if (!this.interpreter || typeof this.interpreter.autoComplete !== 'function')
             return;
 
@@ -235,7 +261,11 @@ export default class CLI extends Program {
             return;
         }
 
-        this.autoCompleteState.words = this.interpreter.autoComplete(words, this.autoCompleteContext);
+        const context = this.createContext();
+        if (this.firstWordFlags != undefined)
+            context.firstWordFlags = this.firstWordFlags;
+
+        this.autoCompleteState.words = this.interpreter.autoComplete(words, context);
         if (this.autoCompleteState.words == undefined || this.autoCompleteState.words.length == 0) {
             this.clearAutoComplete(autoCompleteDiv);
             return;
@@ -290,6 +320,11 @@ export default class CLI extends Program {
         this.clearAutoComplete(autoCompleteDiv);
     }
 
+    setTextBox(string) {
+        const inputElement = document.getElementById('input');
+        inputElement.value = string;
+    }
+
     clearAutoComplete(autoCompleteDiv) {
         this.autoCompleteState.words = [];
         this.autoCompleteState.index = 0;
@@ -308,11 +343,21 @@ export default class CLI extends Program {
 
     async autoScroll() {
         var outputDiv = document.getElementById('output');
+        if (!outputDiv)
+            return;
         const autoScrollTargetDiv = document.getElementById(this.autoScrollTargetDivID);
-        //* If we have queued to just snap to the bottom, lets do that and get outa here
-        if (this.queue_snapToBottom || !autoScrollTargetDiv) {
-            outputDiv.scrollTop = outputDiv.scrollHeight;
+
+        //* If we have queued to just snap to the top or bottom, lets do that and get outa here
+        let snapQueued = this.queue_snapTotop || this.queue_snapToBottom || !autoScrollTargetDiv;
+        if (snapQueued) {
+            if (this.queue_snapTotop) {
+                outputDiv.scrollTop = 0;
+            } else {
+                outputDiv.scrollTop = outputDiv.scrollHeight;
+            }
+
             this.queue_snapToBottom = false;
+            this.queue_snapTotop = false;
             return;
         }
 
@@ -339,6 +384,8 @@ export default class CLI extends Program {
         //*Detect where we can scroll based off of our target and max scroll capability
         function updateScrollTop() {
             outputDiv = document.getElementById('output');
+            if (!outputDiv)
+                return;
             const bottomOut = outputDiv.scrollHeight - outputDiv.offsetHeight;
             scrollTop = Math.min(bottomOut, scrollTarget);
         }
@@ -346,18 +393,22 @@ export default class CLI extends Program {
 
     cullingTest() {
         const outputDiv = document.getElementById('output');
+        if (!outputDiv)
+            return;
 
         let cullCount = 0;
         let scrollHeight = outputDiv.scrollHeight;
 
-        while (scrollHeight > this.cullMax_scrollHeight) {
-            const elementHeight = document.getElementById(this.blocks[cullCount].props.id).offsetHeight;
-            scrollHeight -= elementHeight;
-            cullCount++;
-        }
+        if (this.allow_printCulling) {
+            while (this.cullMax_scrollHeight >= 0 && scrollHeight > this.cullMax_scrollHeight) {
+                const elementHeight = document.getElementById(this.blocks[cullCount].props.id).offsetHeight;
+                scrollHeight -= elementHeight;
+                cullCount++;
+            }
 
-        while (this.blocks.length - cullCount > this.cullMax_commandBlocks) {
-            cullCount++;
+            while (this.cullMax_commandBlocks >= 0 && this.blocks.length - cullCount > this.cullMax_commandBlocks) {
+                cullCount++;
+            }
         }
 
         if (cullCount > 0) {
@@ -393,6 +444,11 @@ export default class CLI extends Program {
                 </div>
                 <div className='inputBox'>
                     <input type="text" id="input" onChange={this.onInputChanged} autoFocus></input>
+                    <button className="sendButton" onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter' }))}>
+                        <svg viewBox="0 0 1080 1080" className="arrowIcon">
+                            <path d="M216.711,216.711L863.289,540L216.711,863.289" />
+                        </svg>
+                    </button>
                     <div id='autoComplete'></div>
                 </div>
             </div>

@@ -4,7 +4,7 @@ import { Directory } from './dir';
 export default function inputFilter(str, context) {
     const parsedStr = getPathedString(str);
     context.complexPath = parsedStr.path != '';
-    context.node = getContextNode(parsedStr.path);
+    context.node = getContextNode(parsedStr.path, context);
 
     const collectedContexts = getContexts(context);
     const possibilities = collectedContexts.reduce((arr, item) => {
@@ -28,6 +28,7 @@ function getContexts(context) {
     const arr = []
 
     if (context.custom != null) arr.push(...context.custom);
+    if (context.flags.has('super')) context.superuser = true;
     if (!context.complexPath && context.flags.has('commands')) arr.push(...getCommandContexts(context));
 
     if (context.node) {
@@ -51,8 +52,8 @@ function getPathedString(str) {
     return split;
 }
 
-function getContextNode(path) {
-    const dirResult = Directory.get(path);
+function getContextNode(path, context) {
+    const dirResult = Directory.get(path, context);
     if (dirResult.success && dirResult.node.isFolder)
         return dirResult.node;
 
@@ -61,7 +62,7 @@ function getContextNode(path) {
 
 function getCommandContexts(context) {
     const result = Array.from(context.interpreter.commands).reduce((arr, [name, value]) => {
-        const requested = context.interpreter.Get(name);
+        const requested = context.interpreter.Get(name, context);
 
         //*If it's one of these then it's an error message, get it out of here!
         if (!Interpreter.commandIsValid(requested))

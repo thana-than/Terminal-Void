@@ -44,7 +44,12 @@ module.exports = {
                 include: /\.module\.css$/
             },
             {
-                test: /\.(png|jpe?g|gif|svg)$/,
+                test: /\.(glsl|vs|fs|vert|frag)$/,
+                use: 'raw-loader',
+                exclude: /node_modules/
+            },
+            {
+                test: /\.(png|jpe?g|gif|svg|mp4|webm|ogg)$/,
                 use: [
                     {
                         loader: 'file-loader',
@@ -75,7 +80,8 @@ module.exports = {
     },
     plugins: [
         new webpack.DefinePlugin({
-            'process.env.GODMODE': JSON.stringify(process.env.GODMODE)
+            'process.env.GODMODE': JSON.stringify(process.env.GODMODE),
+            'process.env.STARTCOMMAND': JSON.stringify(process.env.STARTCOMMAND)
         }),
         new HtmlWebpackPlugin({
             template: './src/index.html',

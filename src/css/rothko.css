@@ -1,0 +1,23 @@
+#rothkoTheme {
+    --primary-color: #fff;
+    --secondary-color: #EF8F5D;
+    --tertiary-color: #8a5336;
+}
+
+.rothko,
+.rothko pre,
+.rothko div {
+    white-space: pre;
+    font-size: 6px;
+    line-height: 0px;
+    margin-bottom: 0 !important;
+    margin-block-end: -11.5px !important;
+    /* background: linear-gradient(to bottom, #EF8F5D 0%, #fff 100%);
+    --webkit-background-clip: text;
+    --webkit-text-fill-color: transparent; */
+}
+
+.rothko-end {
+    padding-top: 1em;
+    color: #EF8F5D;
+}

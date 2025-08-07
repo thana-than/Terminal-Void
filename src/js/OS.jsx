@@ -1,7 +1,9 @@
+import Global from './global';
 import React, { useState, useEffect, useRef } from 'react';
 import Terminal from "./terminal";
 import '../css/os.css'
 import '../css/fonts.css'
+import { Howler } from 'howler';
 
 let initialized = false;
 let baseTerminal;
@@ -55,9 +57,17 @@ export default function OS() {
     const [output, setOutput] = useState('');
 
     function Initialize() {
+        Howler.volume(.5); //* Set starting volume to 50%
+        //TODO maybe consider loading the last stored volume setting
+
         baseTerminal = Terminal;
         updateOutput = (newOut) => { setOutput(newOut); }
         runProgram(baseTerminal);
+        if (Global.START_COMMAND) {
+            console.log("SENDING COMMAND " + Global.START_COMMAND);
+            baseTerminal.sendCommand(Global.START_COMMAND);
+        }
+
         initialized = true;
     }
 
@@ -65,18 +75,26 @@ export default function OS() {
         //* Define the keydown event handler
         const handleKeyDown = (event) => {
             if (runningProgram) {
-                runningProgram.onKeyDown(event);
+                runningProgram.event_keyDown(event);
+            }
+        };
+
+        const handleKeyUp = (event) => {
+            if (runningProgram) {
+                runningProgram.event_keyUp(event);
             }
         };
 
         //* Add the event listener
         window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
 
         update = requestAnimationFrame(updateLoop);
 
         //* Cleanup
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
             cancelAnimationFrame(runningProgram);
         };
     }, []);

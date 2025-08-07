@@ -1,10 +1,8 @@
-import Global from './global.js';
-
 class GameData {
     accessKeys = new Set();
 
-    HasAccess(key) {
-        if (Global.GOD_MODE)
+    HasAccess(key, permissions) {
+        if (permissions && typeof permissions.isSuperuser === 'function' && permissions.isSuperuser())
             return true;
 
         return this.accessKeys.has(key);

@@ -17,6 +17,9 @@ class FileHandle {
 
         Global.log(`Opening ${node.fullName} at ${node.pathLink}`);
 
+        if (!handle.requiresFileLoad)
+            return handle.read(node);
+
         const file = await load(node.hash);
         if (file) {
             Global.log(`Reading file at path ${node.pathLink}.`)
@@ -34,6 +37,9 @@ class FileHandle {
 
         Global.log(`Examining ${node.fullName} at ${node.pathLink}`);
 
+        if (!handle.requiresFileLoad)
+            return handle.examine(node);
+
         const file = await load(node.hash);
         if (file) {
             Global.log(`Examining file at path ${node.pathLink}.`)
@@ -47,6 +53,7 @@ class FileHandle {
 
     constructor(extensions) {
         this.extensions = extensions;
+        this.requiresFileLoad = true;
         this.extensions.forEach(key => {
             FileHandle.fileHandles.set(key, this);
         });
@@ -87,6 +94,18 @@ function fileHandleFactory(properties) {
 
     return new FileHandleProxy();
 }
+
+const RuntimePayloadHandle = fileHandleFactory({
+    extensions: ['runtime'],
+    requiresFileLoad: false,
+    read: function (node) {
+        return node.runtimePayload;
+    },
+
+    examine: function (node) {
+        return node.examine;
+    },
+})
 
 const TextHandle = fileHandleFactory({
     extensions: ['txt', 'html'],
@@ -141,6 +160,9 @@ const JSHandle = fileHandleFactory({
 const JSXHandle = fileHandleFactory({
     extensions: ['jsx'],
     read: async function (node, file) {
+        if (typeof file === 'function')
+            file = file(); //* If the file is a function, call it to get the component
+
         const fileType = file.prototype || file;
         if (fileType instanceof Program) {
             const program = file.prototype ? new file() : file; //*Either creates a new instance if this is a type, or just grabs the existing instance
@@ -150,15 +172,15 @@ const JSXHandle = fileHandleFactory({
                 await new Promise(resolve => setTimeout(resolve, 100)); //*Wait 100 ms in loop while waiting for program to stop
             }
 
-            if (program.postMessage)
-                return program.postMessage;
+            let message = program.postMessage;
+            if (message === undefined)
+                message = `Finished running ${node.fullName}`;
 
-            return `Finished running ${node.fullName}`;
+            return message;
         }
 
         try {
-            const Component = file;
-            return <Component />;
+            return file;
         } catch (error) {
             console.error(`Error loading JSX component for node ${node}:`, error);
             throw error;

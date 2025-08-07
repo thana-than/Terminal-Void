@@ -1,6 +1,7 @@
 import { FileHandle } from './fileHandle.js';
 import Data from "./gameData";
 import React from "react";
+import { SUPERUSER } from './userperms.js';
 
 const REGEX_SLASH = /[\\/]/;
 const REGEX_ROOT = /^(\s*(?:\/|\\))/i;
@@ -12,8 +13,8 @@ class Directory {
     static root;
     static current;
 
-    static cd(path, forceUnsafe = false) {
-        const result = Directory.get(path)
+    static cd(path, context, forceUnsafe = false) {
+        const result = Directory.get(path, context)
 
         if (!forceUnsafe) {
             if (!result.success) return result;
@@ -25,29 +26,40 @@ class Directory {
             }
         }
 
-        this.cdNode(result.node);
+        this.cdNode(result.node, context);
         return result;
     }
 
-    static cdNode(node) {
+    static cdNode(node, context) {
         Directory.current = node;
         node.hasOpened = true;
-        return node.path();
+        return node.path(context);
     }
 
-    static async run(path) {
-        const result = Directory.get(path)
+    static cdStartDir() {
+        Directory.cd(START_DIR, SUPERUSER, true);
+    }
+
+    static async run(path, context) {
+        const result = Directory.get(path, context)
         if (!result.success) return result.message;
         if (!result.node.isFile) return <>Path '{path}' is a <Folder />, not a <File />.</>;
 
         return await Directory.runNode(result.node);
     }
 
-    static examine(path) {
-        const result = Directory.get(path)
+    static examine(path, context) {
+        const result = Directory.get(path, context)
         if (!result.node) return result.message; //* We don't check for success, just if we found a node at all. we should be allowed to examine a file or folder even if we don't have access
 
-        if (result.node.examine) { console.log("RESULT " + result.node.examine); return result.node.examine; }
+        if (result.node.examine) {
+            const msg = result.node.examine;
+            if (typeof result.node.examine === 'function')
+                msg = msg();
+
+            console.log("RESULT " + msg);
+            return msg;
+        }
 
         if (!result.node.isFile) return <>A <Folder />.</>;
         return FileHandle.examine(result.node);
@@ -60,8 +72,8 @@ class Directory {
 
     //*builds an array that includes the most straightforward node path from the start to end node
     static tracePath(startNode, endNode) {
-        var startParents = startNode.getParents(true);
-        var endParents = endNode.getParents(true);
+        var startParents = startNode.getParents(SUPERUSER);
+        var endParents = endNode.getParents(SUPERUSER);
 
         if (startParents[0] != endParents[0]) throw `Nodes ${startNode.fullName} and ${endNode.fullName} have no common ancestor.`; //*Should never happen in out game, since all nodes are based in ROOT but it's here in case
 
@@ -79,11 +91,11 @@ class Directory {
         return [...startParents.reverse(), ...endParents] //*merge the two arrays, reversing the start parents as we are walking up from there
     }
 
-    static travelCheck(startNode, endNode) {
+    static travelCheck(startNode, endNode, context) {
         const pathTrace = this.tracePath(startNode, endNode);
         const len = pathTrace.length;
         for (var i = 0; i < len; i++) {
-            if (!pathTrace[i].hasAccess())
+            if (!pathTrace[i].hasAccess(context))
                 return {
                     success: false,
                     message: pathTrace[i].accessFail,
@@ -93,7 +105,7 @@ class Directory {
         return { success: true }
     }
 
-    static get(path) {
+    static get(path, context) {
         //* If the path starts with a slash, we start at root. If not, this is a local path
         let targetNode = this.current;
 
@@ -102,7 +114,7 @@ class Directory {
 
         const rootMatch = path.match(REGEX_ROOT);
         if (rootMatch) {
-            targetNode = targetNode.getParentMost();
+            targetNode = targetNode.getParentMost(context);
             path = path.replace(rootMatch[1], "");
         }
 
@@ -113,7 +125,7 @@ class Directory {
         //* Quick little check here to see if the user has input a location parented from this node, if so we jump back to there for our path
         //* But only if the first node cannot be gathered via getChild!
         if (!targetNode.getChild(pathArray[0])) {
-            const parents = targetNode.getParents();
+            const parents = targetNode.getParents(context);
             for (let i = parents.length - 1; i >= 0; i--) {
                 if (pathArray[0] == parents[i].name.toLowerCase()) {
                     targetNode = parents[i];
@@ -158,7 +170,7 @@ class Directory {
 
         payload.node = targetNode;
 
-        const travelResult = this.travelCheck(this.current, targetNode);
+        const travelResult = this.travelCheck(this.current, targetNode, context);
         if (!travelResult.success) {
             if (travelResult.message)
                 payload.message = travelResult.message;
@@ -171,7 +183,7 @@ class Directory {
         }
 
         payload.success = true;
-        payload.message = targetNode.path();
+        payload.message = targetNode.path(context);
         return payload;
     }
 
@@ -180,46 +192,91 @@ class Directory {
         //*We rename the gameFolder to ROOT for gameplay
         this.root.fullName = this.root.name = ROOT_NAME;
         //*Set our start point
-        Directory.cd(START_DIR, true);
+        Directory.cdStartDir();
         return this.root;
     }
 
     static buildNodes(jsonNode, parent) {
-        let node = new PathNode(jsonNode, parent)
+        let node = PathNode.fromJSON(jsonNode, parent)
+        if (node.isFile)
+            console.log("LOG " + node.gameExt);
 
         if (node.isFile)
             return node;
 
         jsonNode["children"].forEach(child => {
             let cNode = this.buildNodes(child, node)
-            node.children.set(cNode.name.toLowerCase(), cNode)
         });
 
         return node
     }
 }
 
-class PathNode {
-    constructor(jsonNode, parent) {
-        this.name = jsonNode["name"];
-        this.hash = jsonNode["hash"];
-        this.pathLink = jsonNode["pathLink"]
-        this.type = jsonNode["type"]
-        this.isFile = this.type != "directory"
-        this.isFolder = !this.isFile;
-        this.parent = parent
-        this.gameExt = jsonNode["gameExt"]
-        this.fullName = this.name;
-        this.key = jsonNode["key"]
-        this.examine = jsonNode["examine"]
-        this.accessFail = jsonNode["accessFail"]
-        this.hasOpened = false;
-        if (this.isFile) { this.fullName += `\.${this.gameExt}`; }
-        else { this.children = new Map(); }
+export class PathNode {
+    static TYPE_RUNTIME_FILE = "runtime";
+    static TYPE_RUNTIME_FILE_DEFAULT_EXT = "file";
+    static TYPE_DIRECTORY = "directory";
+
+    static fromJSON(jsonNode, parent) {
+        const node = new PathNode(jsonNode["name"], jsonNode["gameExt"], jsonNode["type"], parent, jsonNode["hash"])
+        node.pathLink = jsonNode["pathLink"]
+        node.key = jsonNode["key"]
+        node.examine = jsonNode["examine"]
+        node.accessFail = jsonNode["accessFail"]
+        node.hiddenWhenLocked = jsonNode["hidden"];
+        return node;
     }
 
-    getClassName() {
-        if (!this.hasAccess())
+    static createRuntimeNode(name, isFile, parent, runtimePayload) {
+        const nameExt = name.toString().split('.');
+        const node = new PathNode(nameExt[0], nameExt[1], isFile ? PathNode.TYPE_RUNTIME_FILE : PathNode.TYPE_DIRECTORY, parent)
+        node.readOnly = false;
+        //TODO sanitize payload
+        node.runtimePayload = runtimePayload;
+        return node;
+    }
+
+    generateRuntimeHash() {
+        const str = this.parent.fullName + this.fullName;
+        let hash = 0;
+
+        if (str.length > 0) {
+            for (let i = 0; i < str.length; i++) {
+                let char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+        }
+
+        return "runtime_" + this.fullName + '_' + hash.toString();
+    }
+
+    constructor(name, gameExt, type, parent, hash) {
+        this.name = name;
+        this.gameExt = gameExt;
+        this.parent = parent;
+        this.type = type;
+        this.isFile = this.type != PathNode.TYPE_DIRECTORY
+        if (this.isFile && this.gameExt == undefined)
+            this.gameExt = PathNode.TYPE_RUNTIME_FILE_DEFAULT_EXT
+        this.isFolder = !this.isFile;
+        this.fullName = this.name;
+        this.hasOpened = false;
+        this.readOnly = true;
+        if (this.isFile) { this.fullName += `\.${this.gameExt}`; }
+        // else { this.children = new Map(); }
+
+        this.hash = hash;
+        if (hash == undefined)
+            this.hash = this.generateRuntimeHash()
+
+        if (this.parent != undefined) {
+            this.parent.addChild(this);
+        }
+    }
+
+    getClassName(context) {
+        if (!this.hasAccess(context))
             return 'lockedItem';
 
         if (!this.hasOpened)
@@ -228,19 +285,19 @@ class PathNode {
         return 'listItem';
     }
 
-    getParentMost(forceAccess = false) {
+    getParentMost(context) {
         if (this.parent == null)
             return this;
 
-        if (!forceAccess && !this.parent.hasAccess())
+        if (!this.parent.hasAccess(context))
             return this;
 
         return this.parent;
     }
 
-    getParents(forceAccess = false) {
+    getParents(context) {
         var nodes = []
-        for (let node = this; node != null && (forceAccess || node.hasAccess()); node = node.parent) {
+        for (let node = this; node != null && (node.hasAccess(context)); node = node.parent) {
             nodes.unshift(node)
         }
         return nodes;
@@ -256,10 +313,21 @@ class PathNode {
         return this.parent.hasParent(node);
     }
 
-    hasAccess() {
+    hasAccess(context) {
         if (this.key == null)
             return true;
-        return Data.HasAccess(this.key);
+
+        return Data.HasAccess(this.key, context);
+    }
+
+    isVisible(context) {
+        return this.hasAccess(context) || !this.hiddenWhenLocked;
+    }
+
+    addChild(node) {
+        if (this.children == undefined)
+            this.children = new Map();
+        this.children.set(node.name.toLowerCase(), node)
     }
 
     getChild(node) {
@@ -278,11 +346,11 @@ class PathNode {
         return child;
     }
 
-    path() {
-        if (this.parent == null || !this.parent.hasAccess())
+    path(context) {
+        if (this.parent == null || !this.parent.hasAccess(context))
             return this.fullName;
 
-        return `${this.parent.path()}/${this.fullName}`
+        return `${this.parent.path(context)}/${this.fullName}`
     }
 }
 
