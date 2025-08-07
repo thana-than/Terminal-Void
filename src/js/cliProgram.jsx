@@ -444,7 +444,11 @@ export default class CLI extends Program {
                 </div>
                 <div className='inputBox'>
                     <input type="text" id="input" onChange={this.onInputChanged} autoFocus></input>
-                    <button className='sendButton' onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter' }))}></button>
+                    <button className="sendButton" onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter' }))}>
+                        <svg viewBox="0 0 1080 1080" className="arrowIcon">
+                            <path d="M216.711,216.711L863.289,540L216.711,863.289" />
+                        </svg>
+                    </button>
                     <div id='autoComplete'></div>
                 </div>
             </div>

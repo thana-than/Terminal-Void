@@ -32,16 +32,19 @@ ol {
 #programTheme {
     --primary-color: #fff;
     --secondary-color: #aaa;
+    --tertiary-color: #777;
 }
 
 #terminalTheme {
     --primary-color: #fff;
     --secondary-color: #aaa;
+    --tertiary-color: #777;
 }
 
 #cliTheme {
     --primary-color: #fff;
     --secondary-color: #aaa;
+    --tertiary-color: #777;
 }
 
 img {
@@ -276,12 +279,32 @@ body,
 .sendButton {
     position: absolute;
     top: 0px;
+    fill: none;
+    background: none;
     right: 0px;
     height: calc(100% - 10px);
-    border-color: var(--secondary-color);
+    border: 1px solid var(--secondary-color);
     color: var(--secondary-color);
     aspect-ratio: 1;
     margin-top: 10px;
+}
+
+.arrowIcon path {
+    stroke: var(--primary-color);
+    stroke-width: 200px;
+    fill: none;
+}
+
+.sendButton:hover,
+.sendButton:hover .arrowIcon path {
+    stroke: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.sendButton:active,
+.sendButton:active .arrowIcon path {
+    stroke: var(--tertiary-color);
+    border-color: var(--tertiary-color);
 }
 
 input {
