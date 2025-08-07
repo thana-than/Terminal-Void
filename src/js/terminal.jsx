@@ -93,7 +93,7 @@ export const TerminalCommands = {
                 arr.sort((a, b) => { return a.isFile - b.isFile; });
 
                 function getNavCommand(node) {
-                    const prefix = node.isFile ? TerminalCommands.RUN.keys[0] : TerminalCommands.OPEN.keys[0];
+                    const prefix = node.isFile ? TerminalCommands.OPEN.keys[0] : TerminalCommands.CD.keys[0];
                     const path = node.path(context);
                     const navCommand = `${prefix} "${path}"`;
                     return navCommand;
