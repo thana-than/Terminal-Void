@@ -156,12 +156,10 @@ export default class CLI extends Program {
     }
 
     onKeyDown(event) {
-        console.log(event);
         if (this.commandRunning) {
             event.preventDefault();
             return;
         }
-        console.log(event.key);
 
         if (this.ready_pressToClose) {
             this.ready_pressToClose = false;
@@ -171,23 +169,11 @@ export default class CLI extends Program {
         const inputElement = document.getElementById('input');
         const autoCompleteDiv = document.getElementById('autoComplete');
 
-        if (event.key === 'Enter') {
-            const command = inputElement.value;
-            inputElement.value = '';
-
-            if (!isWhitespaceString(command) && this.commandHistory[this.commandHistory.length - 1] != command)
-                this.commandHistory.push(command);
-
-            //* If we are using a max size for our command history, enforce it by removing the first element of the history (if over max)
-            if (this.commandHistory_maxSize > 0 && this.commandHistory.length > this.commandHistory_maxSize)
-                this.commandHistory.shift();
-
-            this.historyIndex = this.commandHistory.length;
-
-            this.clearAutoComplete(autoCompleteDiv);
-            this.commandBuffer = '';
-            this.sendCommand(command);
-        } else if (event.key === 'ArrowUp') {
+        if (this.isUserAttemptingAutoComplete(event, inputElement)) { //* Autocomplete
+            this.assignAutoComplete(inputElement, autoCompleteDiv);
+            event.preventDefault();
+        }
+        else if (event.key === 'ArrowUp') { //* Scroll up in command history
             const wordsLen = this.autoCompleteState.words.length;
             if (wordsLen > 0) {
                 this.autoCompleteState.index = (this.autoCompleteState.index - 1 + wordsLen) % wordsLen;
@@ -202,7 +188,7 @@ export default class CLI extends Program {
                 this.clearAutoComplete(autoCompleteDiv);
             }
             event.preventDefault();
-        } else if (event.key === 'ArrowDown') {
+        } else if (event.key === 'ArrowDown') { //* Scroll down in command history
             const wordsLen = this.autoCompleteState.words.length;
             if (wordsLen > 0) {
                 this.autoCompleteState.index = (this.autoCompleteState.index + 1) % this.autoCompleteState.words.length;
@@ -220,9 +206,22 @@ export default class CLI extends Program {
             }
 
             event.preventDefault();
-        } else if (this.isUserAttemptingAutoComplete(event, inputElement)) {
-            this.assignAutoComplete(inputElement, autoCompleteDiv);
-            event.preventDefault();
+        } else if (event.key === 'Enter') { //* Submit input
+            const command = inputElement.value;
+            inputElement.value = '';
+
+            if (!isWhitespaceString(command) && this.commandHistory[this.commandHistory.length - 1] != command)
+                this.commandHistory.push(command);
+
+            //* If we are using a max size for our command history, enforce it by removing the first element of the history (if over max)
+            if (this.commandHistory_maxSize > 0 && this.commandHistory.length > this.commandHistory_maxSize)
+                this.commandHistory.shift();
+
+            this.historyIndex = this.commandHistory.length;
+
+            this.clearAutoComplete(autoCompleteDiv);
+            this.commandBuffer = '';
+            this.sendCommand(command);
         }
     }
 
@@ -231,10 +230,13 @@ export default class CLI extends Program {
     }
 
     isUserAttemptingAutoComplete(event, inputElement) {
+        if (event.code === 'simulated')
+            return false;
+
         if (event.key === 'Tab')
             return true;
 
-        if (event.key === 'ArrowRight' && this.hasAutoComplete() && inputElement.selectionStart >= inputElement.value.length)
+        if ((event.key === 'ArrowRight' || event.key === 'Enter') && this.hasAutoComplete() && inputElement.selectionStart >= inputElement.value.length)
             return true;
 
         return false;
@@ -444,7 +446,7 @@ export default class CLI extends Program {
                 </div>
                 <div className='inputBox'>
                     <input type="text" id="input" onChange={this.onInputChanged} autoFocus></input>
-                    <button className="sendButton" onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter' }))}>
+                    <button className="sendButton" onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'simulated' }))}>
                         <svg viewBox="0 0 1080 1080" className="arrowIcon">
                             <path d="M216.711,216.711L863.289,540L216.711,863.289" />
                         </svg>
