@@ -340,6 +340,8 @@ export default class CLI extends Program {
 
     async autoScroll() {
         var outputDiv = document.getElementById('output');
+        if (!outputDiv)
+            return;
         const autoScrollTargetDiv = document.getElementById(this.autoScrollTargetDivID);
 
         //* If we have queued to just snap to the top or bottom, lets do that and get outa here
@@ -379,6 +381,8 @@ export default class CLI extends Program {
         //*Detect where we can scroll based off of our target and max scroll capability
         function updateScrollTop() {
             outputDiv = document.getElementById('output');
+            if (!outputDiv)
+                return;
             const bottomOut = outputDiv.scrollHeight - outputDiv.offsetHeight;
             scrollTop = Math.min(bottomOut, scrollTarget);
         }
@@ -386,6 +390,8 @@ export default class CLI extends Program {
 
     cullingTest() {
         const outputDiv = document.getElementById('output');
+        if (!outputDiv)
+            return;
 
         let cullCount = 0;
         let scrollHeight = outputDiv.scrollHeight;
