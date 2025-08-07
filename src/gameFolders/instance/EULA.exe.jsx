@@ -1,6 +1,7 @@
 import React from "react";
 import { Quiz, Prompt } from "/src/js/quizProgram";
 import UnlockKey from '/src/js/unlockKey';
+import { TerminalCommands } from "/src/js/terminal"
 
 //* Method so that it re-instantiates the quiz every time it is run.
 const keyUnlock = new UnlockKey('CLIENT');
@@ -101,7 +102,11 @@ const EULA = () => {
         keys: ['yes', 'y', 'accept'],
         response: () => {
             let keyMessage = unlockKey();
-            quiz.postMessage = keyMessage; //* Set out postMessage to the key unlock message.
+            quiz.postMessage = <>
+                <div className="head">{keyMessage}</div>
+                <div className="text">New Command Unlocked: GOTO. Help command list expanded.</div>
+                <div className="tip">Enter "help goto" for specific details on the goto command.</div><br></br>
+                <div>{TerminalCommands.CD.invoke()}</div></>; //* Set out postMessage to the key unlock message.
             return <>
                 <p>Thank you for accepting our terms.<br></br> You may now proceed to use Ansible.</p><br></br> {keyMessage}
             </>
