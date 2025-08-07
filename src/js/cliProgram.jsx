@@ -164,6 +164,7 @@ export default class CLI extends Program {
         if (this.ready_pressToClose) {
             this.ready_pressToClose = false;
             this.close();
+            event.preventDefault();
         }
 
         let inputElement = document.getElementById('input');
