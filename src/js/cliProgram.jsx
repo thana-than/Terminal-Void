@@ -249,10 +249,24 @@ export default class CLI extends Program {
         if (event.code === 'simulated')
             return false;
 
-        if ((event.key === 'Tab' || event.key === 'ArrowRight' || event.key === 'Enter') && this.hasAutoComplete() && inputElement.selectionStart >= inputElement.value.length)
-            return true;
+        const validKeyPress = event.key === 'Tab' || event.key === 'ArrowRight' || event.key === 'Enter';
+        if (!validKeyPress)
+            return false;
 
-        return false;
+        if (!this.hasAutoComplete())
+            return;
+
+        const cursorAtEndOfText = inputElement.selectionStart >= inputElement.value.length;
+        if (!cursorAtEndOfText)
+            return false;
+
+        //* Checks if the word we are focussed on in the autocomplete is already completed, if so we don't need to autocomplete
+        const commandSplits = this.getSplits(inputElement.value);
+        const word = commandSplits[commandSplits.length - 1];
+        if (word !== undefined && word.toLowerCase().trim() == this.autoCompleteState.words[this.autoCompleteState.index].word)
+            return false;
+
+        return true;
     }
 
     runAutoComplete(inputDiv) {
@@ -319,10 +333,10 @@ export default class CLI extends Program {
         return commandSplits;
     }
 
-    assignAutoComplete(inputElement, autoCompleteDiv) {
+    getLastCompleteWordInInput(inputElement) {
         let text = inputElement.value;
         if (text == '' || !this.hasAutoComplete())
-            return;
+            return undefined;
 
         const commandSplits = this.getSplits(text);
         const last = commandSplits[commandSplits.length - 1];
@@ -330,6 +344,13 @@ export default class CLI extends Program {
 
         if (lastLen > 0)
             text = text.slice(0, -last.length);
+        return text;
+    }
+
+    assignAutoComplete(inputElement, autoCompleteDiv) {
+        const text = this.getLastCompleteWordInInput(inputElement);
+        if (text === undefined)
+            return;
 
         inputElement.value = `${text}${this.autoCompleteState.words[this.autoCompleteState.index].word}`;
         this.clearAutoComplete(autoCompleteDiv);
