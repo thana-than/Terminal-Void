@@ -16,9 +16,12 @@ export default class CLI extends Program {
     clearedBlocks = []
     commandRunning = false;
     startMessage = <>Welcome!</>;
-    pressToCloseMessage = <>Press any key to continue.</>
+    pressToCloseInputBox = "Press any key to continue."
+    pressToCloseMessage = <>{this.pressToCloseInputBox}</>
     initialized = false;
     showSendButton = true;
+
+    pressToClose_excludedKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
 
     ready_pressToClose = false;
     queue_pressToClose = false;
@@ -155,13 +158,26 @@ export default class CLI extends Program {
         return payload;
     }
 
+    focusOutputDiv() {
+        let outputDiv = document.getElementById('output');
+        outputDiv?.focus({ focusVisible: false });
+    }
+
+    close() {
+        //* Re-enable the inputElement (in case we disabled it)
+        let inputElement = document.getElementById('input');
+        inputElement.disabled = false;
+
+        super.close();
+    }
+
     onKeyDown(event) {
         if (this.commandRunning) {
             event.preventDefault();
             return;
         }
 
-        if (this.ready_pressToClose) {
+        if (this.ready_pressToClose && !this.pressToClose_excludedKeys.has(event.key)) {
             this.ready_pressToClose = false;
             this.close();
             event.preventDefault();
@@ -177,8 +193,7 @@ export default class CLI extends Program {
         }
         else if (event.key === 'Tab') { //* Tab between the output block and the input element
             if (inputElementFocussed) {
-                let outputDiv = document.getElementById('output');
-                outputDiv?.focus({ focusVisible: false });
+                this.focusOutputDiv();
             }
             else
                 inputElement.focus();
@@ -456,6 +471,11 @@ export default class CLI extends Program {
 
     run() {
         this.queue_snapToBottom = true;
+        let inputElement = document.getElementById('input');
+        if (inputElement) {
+            inputElement.disabled = false;
+            inputElement.focus();
+        }
     }
 
     preDrawStep() {
@@ -465,7 +485,11 @@ export default class CLI extends Program {
         if (this.queue_pressToClose) {
             this.queue_pressToClose = false;
             this.ready_pressToClose = true;
+            let inputElement = document.getElementById('input');
+            inputElement.value = this.pressToCloseInputBox;
+            inputElement.disabled = true;
             this.print(<div>{this.pressToCloseMessage}</div>, false, false);
+            this.focusOutputDiv();
         }
     }
 
