@@ -73,6 +73,7 @@
   "dependencies": {
     "@react-three/fiber": "^9.1.4",
     "dompurify": "^3.1.5",
+    "howler": "^2.2.4",
     "javascript-color-gradient": "^2.5.0",
     "lodash": "^4.17.21",
     "react": "^19.1.0",

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Terminal from "./terminal";
 import '../css/os.css'
 import '../css/fonts.css'
+import { Howler } from 'howler';
 
 let initialized = false;
 let baseTerminal;
@@ -56,6 +57,9 @@ export default function OS() {
     const [output, setOutput] = useState('');
 
     function Initialize() {
+        Howler.volume(.5); //* Set starting volume to 50%
+        //TODO maybe consider loading the last stored volume setting
+
         baseTerminal = Terminal;
         updateOutput = (newOut) => { setOutput(newOut); }
         runProgram(baseTerminal);

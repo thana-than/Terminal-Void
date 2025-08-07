@@ -1,3 +1,4 @@
+import { Howl } from 'howler';
 import '/src/css/os.css';
 import React from "react";
 import Program from "/src/js/program";
@@ -10,18 +11,28 @@ class JumpScare extends Program {
         this.occurred = false;
         this.timer = 3000;
         this.duration = 300;
+
+        this.sound = new Howl({
+            src: ['assets/audio/jumpscare.wav']
+        });
+        this.sound.once('end', () => this.sound.unload());
+    }
+
+    playJumpscare() {
+        this.occurred = true;
+        this.refresh();
+        this.sound.play();
+        floatingOverlay(
+            <img src="assets/jumpscare.png"></img>,
+            this.duration
+        );
     }
 
     close() {
         if (!this.queued) {
             this.queued = true;
             setTimeout(() => {
-                this.occurred = true;
-                this.refresh();
-                floatingOverlay(
-                    <img src="assets/blindspot.png"></img>,
-                    this.duration
-                );
+                this.playJumpscare();
             }, this.timer);
         }
         super.close();
