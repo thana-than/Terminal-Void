@@ -276,6 +276,10 @@ body,
     padding-top: 10px;
 }
 
+.inputBox input {
+    width: calc(100% - 30px);
+}
+
 .sendButton {
     position: absolute;
     top: 0px;
@@ -283,7 +287,8 @@ body,
     background: none;
     right: 0px;
     height: calc(100% - 10px);
-    border: 1px solid var(--secondary-color);
+    /* border: 1px solid var(--secondary-color); */
+    border: none;
     color: var(--secondary-color);
     aspect-ratio: 1;
     margin-top: 10px;
@@ -298,13 +303,13 @@ body,
 .sendButton:hover,
 .sendButton:hover .arrowIcon path {
     stroke: var(--secondary-color);
-    border-color: var(--secondary-color);
+    /* border-color: var(--secondary-color); */
 }
 
 .sendButton:active,
 .sendButton:active .arrowIcon path {
     stroke: var(--tertiary-color);
-    border-color: var(--tertiary-color);
+    /* border-color: var(--tertiary-color); */
 }
 
 input {
