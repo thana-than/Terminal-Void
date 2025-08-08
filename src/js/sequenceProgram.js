@@ -17,9 +17,12 @@ export class Sequence extends CLI {
         this.sequenceIndex = 0;
         this.sequence = sequence;
         this.startMessage = startMessage;
+        this.focusOnInputOnRun = false;
         this.interpreter = new Interpreter([NEXT_SEQUENCE_COMMAND], NEXT_SEQUENCE_COMMAND);
         if (startImmediate)
             this.sendCommand('next');
+
+        this.disableInput("Press any key...");
     }
 
     onKeyDown(event) {

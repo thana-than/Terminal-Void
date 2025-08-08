@@ -312,20 +312,23 @@ body,
 .toolbar button {
     height: 100%;
     aspect-ratio: 1;
-    opacity: 50%;
+    opacity: 100%;
     background: none;
-    color: var(--primary-color);
-    border: 1px solid var(--primary-color);
+    color: var(--secondary-color);
+    border: 1px solid;
+    border-color: var(--secondary-color);
     border-right: none;
     border-top: none;
 }
 
 .toolbar button:hover {
+    opacity: 50%;
     color: var(--secondary-color);
     border-color: var(--secondary-color);
 }
 
 .toolbar button:active {
+    opacity: 50%;
     color: var(--tertiary-color);
     border-color: var(--tertiary-color);
 }

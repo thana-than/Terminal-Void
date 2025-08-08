@@ -20,7 +20,6 @@ const gradientLength = gradientArray.length;
 
 const qr_array = qr_string_array.map((line, idx) => {
     const colorIdx = Math.floor(idx * (gradientLength - 1.0) / (qrLength - 1.0));
-    console.log(colorIdx);
     return <div className='rothko' style={{ color: gradientArray[colorIdx] }} key={idx}>{line}</div>
 });
 const closeMessage = "Press any key to exit."
