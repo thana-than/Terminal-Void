@@ -6,6 +6,11 @@ export default class Program {
     themeStyle = "programTheme";
     canCloseOnKey = true
 
+    uiFlags = {
+        close: true,
+        volume: true
+    }
+
     event_keyDown(event) {
         if (this.testCloseKey(event))
             return;
@@ -36,7 +41,7 @@ export default class Program {
 
     refresh() {
         if (this.refreshCallback)
-            this.refreshCallback(this.draw());
+            this.refreshCallback(this.drawCall());
     }
 
     close() {
@@ -50,6 +55,19 @@ export default class Program {
 
     isRunning() {
         return this.closeCallback != null;
+    }
+
+    drawCall() {
+        return <>
+            {this.draw_toolbar()}
+            {this.draw()}
+        </>;
+    }
+
+    draw_toolbar() {
+        return <div className='toolbar'>
+            {this.uiFlags.close && <button onClick={() => this.close()}>X</button>}
+        </div>
     }
 
     draw() {

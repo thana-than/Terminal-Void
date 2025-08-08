@@ -294,6 +294,42 @@ body,
     margin-top: 10px;
 }
 
+.toolbar {
+    position: absolute;
+    display: flex;
+    flex-direction: row-reverse;
+    top: 0px;
+    height: 30px;
+    width: 100%;
+    z-index: 100;
+}
+
+.toolbar.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.toolbar button {
+    height: 100%;
+    aspect-ratio: 1;
+    opacity: 50%;
+    background: none;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-right: none;
+    border-top: none;
+}
+
+.toolbar button:hover {
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.toolbar button:active {
+    color: var(--tertiary-color);
+    border-color: var(--tertiary-color);
+}
+
 .arrowIcon path {
     stroke: var(--primary-color);
     stroke-width: 200px;

@@ -50,7 +50,7 @@ export function runProgram(program) {
     runningProgram.run();
 
     //* Initialize the programs's initial output
-    updateOutput(runningProgram.draw());
+    updateOutput(runningProgram.drawCall());
 }
 
 export default function OS() {
