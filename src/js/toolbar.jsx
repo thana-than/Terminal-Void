@@ -10,7 +10,7 @@ export default function Toolbar({ program, excludeButtonFlags = {} }) {
             elem.requestFullscreen();
     }
 
-    return <div className='toolbar'>
+    return <div className='toolbar' tabIndex="0">
         {!excludeButtonFlags.close && <ToolbarButton onClick={() => program.close()}>X</ToolbarButton>}
         {!excludeButtonFlags.fullscreen && <ToolbarButton onClick={() => toggleFullscreen()}>◳</ToolbarButton>}
     </div>
