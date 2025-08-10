@@ -1,15 +1,13 @@
 import React from 'react';
+import Toolbar from './toolbar';
 
 export default class Program {
     refreshCallback = null;
     closeCallback = null;
     themeStyle = "programTheme";
-    canCloseOnKey = true
+    canCloseOnKey = true;
 
-    uiFlags = {
-        close: true,
-        volume: true
-    }
+    toolbarExcludeFlags = {};
 
     event_keyDown(event) {
         if (this.testCloseKey(event))
@@ -61,15 +59,9 @@ export default class Program {
 
     drawCall() {
         return <>
-            {this.draw_toolbar()}
+            <Toolbar program={this} excludeButtonFlags={this.toolbarExcludeFlags} />
             {this.draw()}
         </>;
-    }
-
-    draw_toolbar() {
-        return <div className='toolbar'>
-            {this.uiFlags.close && <button onClick={() => this.close()}>X</button>}
-        </div>
     }
 
     draw() {
