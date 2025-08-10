@@ -1,10 +1,13 @@
 import React from 'react';
+import Toolbar from './toolbar';
 
 export default class Program {
     refreshCallback = null;
     closeCallback = null;
     themeStyle = "programTheme";
-    canCloseOnKey = true
+    canCloseOnKey = true;
+
+    toolbarExcludeFlags = {};
 
     event_keyDown(event) {
         if (this.testCloseKey(event))
@@ -13,6 +16,8 @@ export default class Program {
         this.onKeyDown(event)
     }
     event_keyUp(event) { this.onKeyUp(event) }
+
+    event_resize() { }
 
     testCloseKey(event) {
         if (!this.canCloseOnKey)
@@ -36,7 +41,7 @@ export default class Program {
 
     refresh() {
         if (this.refreshCallback)
-            this.refreshCallback(this.draw());
+            this.refreshCallback(this.drawCall());
     }
 
     close() {
@@ -50,6 +55,13 @@ export default class Program {
 
     isRunning() {
         return this.closeCallback != null;
+    }
+
+    drawCall() {
+        return <>
+            <Toolbar program={this} excludeButtonFlags={this.toolbarExcludeFlags} />
+            {this.draw()}
+        </>;
     }
 
     draw() {

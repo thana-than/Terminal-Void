@@ -284,6 +284,7 @@ const interpreter = new Interpreter(
 const Terminal = new CLI(interpreter);
 Terminal.themeStyle = "terminalTheme";
 Terminal.canCloseOnKey = false;
+Terminal.toolbarExcludeFlags.close = true;
 
 if (Global.GOD_MODE)
     var godModeMessage = <div>God mode activated.</div>

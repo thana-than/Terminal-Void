@@ -2,6 +2,7 @@ html,
 body {
     background: #000;
     overflow: hidden;
+    margin: 0;
 }
 
 h1,
@@ -15,6 +16,13 @@ ul,
 ol {
     margin-block-start: 0;
     margin-block-end: 0;
+}
+
+.scaleWrapper {
+    transform-origin: middle center;
+    height: 100vh;
+    width: 100vw;
+    transform: scale(1);
 }
 
 .lockedItem {
@@ -276,6 +284,10 @@ body,
     padding-top: 10px;
 }
 
+.inputBox input {
+    width: calc(100% - 30px);
+}
+
 .sendButton {
     position: absolute;
     top: 0px;
@@ -283,10 +295,61 @@ body,
     background: none;
     right: 0px;
     height: calc(100% - 10px);
-    border: 1px solid var(--secondary-color);
+    /* border: 1px solid var(--secondary-color); */
+    border: none;
     color: var(--secondary-color);
     aspect-ratio: 1;
     margin-top: 10px;
+}
+
+.toolbar {
+    position: absolute;
+    display: flex;
+    flex-direction: row-reverse;
+    top: 0px;
+    height: 30px;
+    width: 100%;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.toolbarButton {
+    position: relative;
+    height: 100%;
+    aspect-ratio: 1;
+    opacity: 100%;
+    background: none;
+    color: var(--secondary-color);
+    border: 1px solid;
+    border-color: var(--secondary-color);
+    border-right: none;
+    border-top: none;
+    pointer-events: all;
+}
+
+.toolbarButtonBackground {
+    position: absolute;
+    opacity: 75%;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 0;
+    transition: background 0.2s;
+}
+
+.toolbarButtonContents {
+    position: relative;
+    z-index: 1;
+}
+
+.toolbarButton:hover .toolbarButtonBackground {
+    background: var(--tertiary-color);
+}
+
+.toolbarButton:active .toolbarButtonBackground {
+    background: var(--secondary-color);
 }
 
 .arrowIcon path {
@@ -298,13 +361,13 @@ body,
 .sendButton:hover,
 .sendButton:hover .arrowIcon path {
     stroke: var(--secondary-color);
-    border-color: var(--secondary-color);
+    /* border-color: var(--secondary-color); */
 }
 
 .sendButton:active,
 .sendButton:active .arrowIcon path {
     stroke: var(--tertiary-color);
-    border-color: var(--tertiary-color);
+    /* border-color: var(--tertiary-color); */
 }
 
 input {

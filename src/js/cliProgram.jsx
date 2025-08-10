@@ -20,6 +20,7 @@ export default class CLI extends Program {
     pressToCloseMessage = <>{this.pressToCloseInputBox}</>
     initialized = false;
     showSendButton = true;
+    focusOnInputOnRun = true;
 
     pressToClose_excludedKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
 
@@ -158,14 +159,19 @@ export default class CLI extends Program {
         return payload;
     }
 
-    focusOutputDiv() {
+    loseInputFocus() {
         let outputDiv = document.getElementById('output');
-        outputDiv?.focus({ focusVisible: false });
+        if (outputDiv)
+            outputDiv.focus({ focusVisible: false });
+        else
+            document.body.focus();
     }
 
     close() {
         //* Re-enable the inputElement (in case we disabled it)
         let inputElement = document.getElementById('input');
+        inputElement.value = "";
+        inputElement.blur();
         inputElement.disabled = false;
 
         super.close();
@@ -193,7 +199,7 @@ export default class CLI extends Program {
         }
         else if (event.key === 'Tab') { //* Tab between the output block and the input element
             if (inputElementFocussed) {
-                this.focusOutputDiv();
+                this.loseInputFocus();
             }
             else
                 inputElement.focus();
@@ -383,11 +389,17 @@ export default class CLI extends Program {
         autoCompleteDiv.innerHTML = '';
     }
 
+    event_resize() {
+        const inputElement = document.getElementById('input');
+        const autoCompleteDiv = document.getElementById('autoComplete');
+        this.updateAutoCompletePosition(inputElement, autoCompleteDiv);
+    }
+
     updateAutoCompletePosition(inputDiv, autoCompleteDiv) {
         const inputRect = inputDiv.getBoundingClientRect();
         const parentRect = inputDiv.parentElement.getBoundingClientRect();
-        const relLeft = inputRect.left - parentRect.left;
-        const relTop = inputRect.top - parentRect.top;
+        const relLeft = (inputRect.left - parentRect.left) / window.globalScale;
+        const relTop = (inputRect.top - parentRect.top) / window.globalScale;
 
         autoCompleteDiv.style.left = `${relLeft}px`;
         autoCompleteDiv.style.top = `${relTop}px`;
@@ -472,10 +484,17 @@ export default class CLI extends Program {
     run() {
         this.queue_snapToBottom = true;
         let inputElement = document.getElementById('input');
-        if (inputElement) {
+        if (this.focusOnInputOnRun && inputElement) {
             inputElement.disabled = false;
             inputElement.focus();
         }
+    }
+
+    disableInput(message = "") {
+        let inputElement = document.getElementById('input');
+        inputElement.value = message;
+        inputElement.disabled = true;
+        this.loseInputFocus();
     }
 
     preDrawStep() {
@@ -485,11 +504,8 @@ export default class CLI extends Program {
         if (this.queue_pressToClose) {
             this.queue_pressToClose = false;
             this.ready_pressToClose = true;
-            let inputElement = document.getElementById('input');
-            inputElement.value = this.pressToCloseInputBox;
-            inputElement.disabled = true;
+            this.disableInput(this.pressToCloseInputBox)
             this.print(<div>{this.pressToCloseMessage}</div>, false, false);
-            this.focusOutputDiv();
         }
     }
 

@@ -50,7 +50,7 @@ export function runProgram(program) {
     runningProgram.run();
 
     //* Initialize the programs's initial output
-    updateOutput(runningProgram.draw());
+    updateOutput(runningProgram.drawCall());
 }
 
 export default function OS() {
@@ -100,6 +100,41 @@ export default function OS() {
     }, []);
 
     useEffect(() => {
+        const scalePage = () => {
+            //* Default window scale is 640 x 360
+            const paddingX = 20;
+            const paddingY = 20;
+            const defW = 640 + paddingX;
+            const defH = 360 + paddingY;
+
+            const minScale = .502;
+
+            const ratioW = window.innerWidth / defW;
+            const ratioH = window.innerHeight / defH;
+
+            const scale = Math.max(minScale, Math.min(ratioW, ratioH));
+
+            const scaleWrapper = document.querySelector('.scaleWrapper');
+            if (scaleWrapper && scaleWrapper.style)
+                scaleWrapper.style.transform = `scale(${scale})`;
+
+            window.globalScale = scale;
+        }
+
+        const handleResize = () => {
+            scalePage();
+            runningProgram?.event_resize();
+        }
+
+        window.addEventListener('resize', handleResize);
+        handleResize();
+
+        return () => {
+            window.removeEventListener('resize', handleKeyDown);
+        };
+    }, []);
+
+    useEffect(() => {
         if (runningProgram && typeof runningProgram.postRenderCallback === 'function') {
             runningProgram.postRenderCallback();
         }
@@ -109,10 +144,12 @@ export default function OS() {
         Initialize();
 
     return (
-        <div className='os'>
-            <div className="program" id={runningProgram.themeStyle}>
-                {output}
-            </div >
+        <div className="scaleWrapper">
+            <div className='os'>
+                <div className="program" id={runningProgram.themeStyle}>
+                    {output}
+                </div >
+            </div>
         </div>
     );
 }

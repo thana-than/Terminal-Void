@@ -21,7 +21,7 @@ export default function inputFilter(str, context) {
     return possibilities;
 }
 
-const backWords = ['../', 'BACK'];
+const backWords = ['..', 'BACK'];
 const REGEX_PATH_SNIPPET = /^(.*[\\\/])/
 
 function getContexts(context) {

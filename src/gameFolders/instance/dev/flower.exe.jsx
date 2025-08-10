@@ -13,7 +13,7 @@ import useVideoTexture from '/src/js/hooks/useVideoTexture.js';
 const Art = () => {
     const mesh = useRef();
     const material = useRef();
-    const { viewport } = useThree();
+    const { gl, size, viewport } = useThree();
     const videoTexture = useVideoTexture(dancingFigureVideo);
     const flowerTextureObj = useLoader(TextureLoader, flowerTexture);
     const textTextureObj = useLoader(TextureLoader, textTexture);
@@ -29,12 +29,28 @@ const Art = () => {
         textTex: { value: textTextureObj }
     }), [videoTexture, flowerTextureObj, textTextureObj]);
 
-    useFrame(({ clock, pointer }) => {
+    //* Resize - necessary for all threejs canvas pieces
+    useEffect(() => {
+        const scale = window.globalScale;
+        gl.setPixelRatio(window.devicePixelRatio);
+        gl.setSize(size.width / scale, size.height / scale, true);
+    }, [size, gl]);
+
+    //* Time - necessary for all threejs canvas pieces (if used in shader)
+    useFrame(({ clock }) => {
         if (material.current) {
             material.current.uniforms.uTime.value = clock.getElapsedTime();
+        }
+    });
+
+    //* Pointer position - necessary for all threejs canvas pieces (if used in shader)
+    useFrame(({ pointer }) => {
+        if (material.current) {
+            const mult = window.globalScale * .5;
+            const offset = .5 * window.globalScale;
             material.current.uniforms.uMouse.value = [
-                pointer.x * 0.5 + 0.5,
-                pointer.y * 0.5 + 0.5
+                pointer.x * mult + offset,
+                pointer.y * mult + 1.0 - offset
             ];
         }
     });
