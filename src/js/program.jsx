@@ -19,6 +19,8 @@ export default class Program {
     }
     event_keyUp(event) { this.onKeyUp(event) }
 
+    event_resize() { }
+
     testCloseKey(event) {
         if (!this.canCloseOnKey)
             return false;

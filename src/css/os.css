@@ -2,6 +2,7 @@ html,
 body {
     background: #000;
     overflow: hidden;
+    margin: 0;
 }
 
 h1,
@@ -15,6 +16,13 @@ ul,
 ol {
     margin-block-start: 0;
     margin-block-end: 0;
+}
+
+.scaleWrapper {
+    transform-origin: middle center;
+    height: 100vh;
+    width: 100vw;
+    transform: scale(1);
 }
 
 .lockedItem {

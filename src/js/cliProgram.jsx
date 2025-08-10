@@ -389,11 +389,17 @@ export default class CLI extends Program {
         autoCompleteDiv.innerHTML = '';
     }
 
+    event_resize() {
+        const inputElement = document.getElementById('input');
+        const autoCompleteDiv = document.getElementById('autoComplete');
+        this.updateAutoCompletePosition(inputElement, autoCompleteDiv);
+    }
+
     updateAutoCompletePosition(inputDiv, autoCompleteDiv) {
         const inputRect = inputDiv.getBoundingClientRect();
         const parentRect = inputDiv.parentElement.getBoundingClientRect();
-        const relLeft = inputRect.left - parentRect.left;
-        const relTop = inputRect.top - parentRect.top;
+        const relLeft = (inputRect.left - parentRect.left) / window.globalScale;
+        const relTop = (inputRect.top - parentRect.top) / window.globalScale;
 
         autoCompleteDiv.style.left = `${relLeft}px`;
         autoCompleteDiv.style.top = `${relTop}px`;
