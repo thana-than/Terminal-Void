@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Program from "./program";
 import Interpreter from './command';
 import UserPerms from './userperms.js';
-
+import Scrollbar from './scrollbar.jsx';
 function isWhitespaceString(str) { return !/\S/.test(str); }
 
 export default class CLI extends Program {
@@ -21,8 +21,10 @@ export default class CLI extends Program {
     initialized = false;
     showSendButton = true;
     focusOnInputOnRun = true;
+    disableInputOnRun = false;
+    outputRef = React.createRef();
 
-    pressToClose_excludedKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
+    pressToClose_excludedKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'])
 
     ready_pressToClose = false;
     queue_pressToClose = false;
@@ -42,7 +44,7 @@ export default class CLI extends Program {
     cullMax_commandBlocks = 100;
     cullMax_scrollHeight = 5000;
 
-    firstWordFlags = ['commands', 'folders', 'files'];
+    firstWordFlags = ['commands'];
     allowAutoComplete = true;
 
     autoCompleteState = {
@@ -159,12 +161,37 @@ export default class CLI extends Program {
         return payload;
     }
 
-    loseInputFocus() {
-        let outputDiv = document.getElementById('output');
-        if (outputDiv)
-            outputDiv.focus({ focusVisible: false });
+    async loseInputFocus() {
+        let outputDiv = await this.waitForRef(this.outputRef);
+        let viewport = outputDiv?.getViewport();
+        if (viewport)
+            viewport.focus({ focusVisible: false });
         else
             document.body.focus();
+    }
+
+    allowInputBoxButton(allow = true) {
+        let inputBoxButton = document.getElementById('inputBoxButton');
+        if (!inputBoxButton)
+            return;
+        inputBoxButton.style.pointerEvents = allow ? 'auto' : 'none';
+    }
+
+    waitForRef(ref, timeout = 200, interval = 50) {
+        return new Promise((resolve, reject) => {
+            const start = Date.now();
+
+            function check() {
+                if (ref.current) {
+                    resolve(ref.current);
+                } else if (Date.now() - start >= timeout) {
+                    reject(new Error('Timeout waiting for ref'));
+                } else {
+                    setTimeout(check, interval);
+                }
+            }
+            check();
+        });
     }
 
     close() {
@@ -406,7 +433,7 @@ export default class CLI extends Program {
     }
 
     async autoScroll() {
-        var outputDiv = document.getElementById('output');
+        var outputDiv = this.outputRef.current?.getViewport();
         if (!outputDiv)
             return;
         const autoScrollTargetDiv = document.getElementById(this.autoScrollTargetDivID);
@@ -447,7 +474,6 @@ export default class CLI extends Program {
 
         //*Detect where we can scroll based off of our target and max scroll capability
         function updateScrollTop() {
-            outputDiv = document.getElementById('output');
             if (!outputDiv)
                 return;
             const bottomOut = outputDiv.scrollHeight - outputDiv.offsetHeight;
@@ -456,7 +482,7 @@ export default class CLI extends Program {
     }
 
     cullingTest() {
-        const outputDiv = document.getElementById('output');
+        const outputDiv = this.outputRef.current?.getViewport();
         if (!outputDiv)
             return;
 
@@ -484,9 +510,11 @@ export default class CLI extends Program {
     run() {
         this.queue_snapToBottom = true;
         let inputElement = document.getElementById('input');
-        if (this.focusOnInputOnRun && inputElement) {
-            inputElement.disabled = false;
-            inputElement.focus();
+        if (inputElement) {
+            inputElement.disabled = this.disableInputOnRun;
+            if (!inputElement.disabled && this.focusOnInputOnRun)
+                inputElement.focus();
+            this.allowInputBoxButton(inputElement.disabled);
         }
     }
 
@@ -494,6 +522,8 @@ export default class CLI extends Program {
         let inputElement = document.getElementById('input');
         inputElement.value = message;
         inputElement.disabled = true;
+        this.allowInputBoxButton(true);
+
         this.loseInputFocus();
     }
 
@@ -509,19 +539,32 @@ export default class CLI extends Program {
         }
     }
 
+    inputBoxClickedEvent() {
+        this.simulateKeydown('Enter');
+    }
+
+    sendButtonClickedEvent() {
+        this.simulateKeydown('Enter');
+    }
+
+    simulateKeydown(key) {
+        this.onKeyDown(new KeyboardEvent('keydown', { key: key, code: 'simulated' }));
+    }
+
     draw() {
         this.preDrawStep();
 
         return (
             <div className="cli">
-                <div tabIndex="1" id="output">
+                <Scrollbar ref={this.outputRef} tabIndex="1" id="output">
                     {this.blocks.map(block => (
                         <React.Fragment key={block.props.id}>{block}</React.Fragment>
                     ))}
-                </div>
-                <div className='inputBox'>
+                </Scrollbar>
+                <div className='inputBox' >
+                    <div id='inputBoxButton' style={{ pointerEvents: 'none' }} className='fill' onClick={() => this.inputBoxClickedEvent()} ></div>
                     <input type="text" tabIndex="2" id="input" onChange={this.onInputChanged} autoFocus></input>
-                    <button className="sendButton" tabIndex="-1" onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'simulated' }))}>
+                    <button className="sendButton" tabIndex="-1" onClick={() => this.sendButtonClickedEvent()}>
                         <svg viewBox="0 0 1080 1080" className="arrowIcon">
                             <path d="M216.711,216.711L863.289,540L216.711,863.289" />
                         </svg>

@@ -285,6 +285,7 @@ const Terminal = new CLI(interpreter);
 Terminal.themeStyle = "terminalTheme";
 Terminal.canCloseOnKey = false;
 Terminal.toolbarExcludeFlags.close = true;
+Terminal.firstWordFlags = ['commands', 'folders', 'files'];
 
 if (Global.GOD_MODE)
     var godModeMessage = <div>God mode activated.</div>

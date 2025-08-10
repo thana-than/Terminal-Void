@@ -1,7 +1,7 @@
 import React from 'react';
 import Toolbar from './toolbar';
 
-export default class Program {
+export default class Program extends React.Component {
     refreshCallback = null;
     closeCallback = null;
     themeStyle = "programTheme";

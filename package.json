@@ -76,6 +76,8 @@
     "howler": "^2.2.4",
     "javascript-color-gradient": "^2.5.0",
     "lodash": "^4.17.21",
+    "overlayscrollbars": "^2.11.5",
+    "overlayscrollbars-react": "^0.5.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "save-dev": "^0.0.1-security",
