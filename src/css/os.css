@@ -222,6 +222,14 @@ img {
     border-color: var(--secondary-color);
 }
 
+/** For phone screens in portait mode: raise the terminal higher so you can use the on screen keyboard */
+@media screen and (orientation: portrait) {
+    .program {
+        top: 25%;
+        transform: translate(-50%, -75%);
+    }
+}
+
 .program hr {
     color: var(--secondary-color);
     border-color: var(--secondary-color);
