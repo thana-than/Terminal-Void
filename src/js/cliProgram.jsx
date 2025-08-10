@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Program from "./program";
 import Interpreter from './command';
 import UserPerms from './userperms.js';
-
+import Scrollbar from './scrollbar.jsx';
 function isWhitespaceString(str) { return !/\S/.test(str); }
 
 export default class CLI extends Program {
@@ -21,8 +21,9 @@ export default class CLI extends Program {
     initialized = false;
     showSendButton = true;
     focusOnInputOnRun = true;
+    outputRef = React.createRef();
 
-    pressToClose_excludedKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
+    pressToClose_excludedKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'])
 
     ready_pressToClose = false;
     queue_pressToClose = false;
@@ -159,12 +160,30 @@ export default class CLI extends Program {
         return payload;
     }
 
-    loseInputFocus() {
-        let outputDiv = document.getElementById('output');
-        if (outputDiv)
-            outputDiv.focus({ focusVisible: false });
+    async loseInputFocus() {
+        let outputDiv = await this.waitForRef(this.outputRef);
+        let viewport = outputDiv?.getViewport();
+        if (viewport)
+            viewport.focus({ focusVisible: false });
         else
             document.body.focus();
+    }
+
+    waitForRef(ref, timeout = 200, interval = 50) {
+        return new Promise((resolve, reject) => {
+            const start = Date.now();
+
+            function check() {
+                if (ref.current) {
+                    resolve(ref.current);
+                } else if (Date.now() - start >= timeout) {
+                    reject(new Error('Timeout waiting for ref'));
+                } else {
+                    setTimeout(check, interval);
+                }
+            }
+            check();
+        });
     }
 
     close() {
@@ -406,7 +425,7 @@ export default class CLI extends Program {
     }
 
     async autoScroll() {
-        var outputDiv = document.getElementById('output');
+        var outputDiv = this.outputRef.current?.getViewport();
         if (!outputDiv)
             return;
         const autoScrollTargetDiv = document.getElementById(this.autoScrollTargetDivID);
@@ -447,7 +466,6 @@ export default class CLI extends Program {
 
         //*Detect where we can scroll based off of our target and max scroll capability
         function updateScrollTop() {
-            outputDiv = document.getElementById('output');
             if (!outputDiv)
                 return;
             const bottomOut = outputDiv.scrollHeight - outputDiv.offsetHeight;
@@ -456,7 +474,7 @@ export default class CLI extends Program {
     }
 
     cullingTest() {
-        const outputDiv = document.getElementById('output');
+        const outputDiv = this.outputRef.current?.getViewport();
         if (!outputDiv)
             return;
 
@@ -514,11 +532,11 @@ export default class CLI extends Program {
 
         return (
             <div className="cli">
-                <div tabIndex="1" id="output">
+                <Scrollbar ref={this.outputRef} tabIndex="1" id="output">
                     {this.blocks.map(block => (
                         <React.Fragment key={block.props.id}>{block}</React.Fragment>
                     ))}
-                </div>
+                </Scrollbar>
                 <div className='inputBox'>
                     <input type="text" tabIndex="2" id="input" onChange={this.onInputChanged} autoFocus></input>
                     <button className="sendButton" tabIndex="-1" onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'simulated' }))}>

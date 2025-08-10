@@ -1,0 +1,35 @@
+.os-scrollbar-vertical {
+    margin-top: 25px;
+    margin-bottom: 0;
+    bottom: 0;
+}
+
+.os-scrollbar {
+    border: 1px dashed;
+    border-color: transparent;
+    transition: border-color .2s;
+}
+
+.os-scrollbar:hover {
+    border: 1px dashed;
+    border-color: var(--secondary-color);
+}
+
+.os-scrollbar-handle {
+    background: var(--secondary-color);
+    border-radius: 0;
+    opacity: 100% !important;
+    transition: background .2s;
+}
+
+.os-scrollbar:hover .os-scrollbar-handle {
+    background: var(--tertiary-color);
+}
+
+.os-scrollbar:active .os-scrollbar-handle {
+    background: var(--secondary-color);
+}
+
+.overlayScrollbarContents {
+    padding-right: 20px;
+}
