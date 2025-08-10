@@ -43,7 +43,7 @@ export default class CLI extends Program {
     cullMax_commandBlocks = 100;
     cullMax_scrollHeight = 5000;
 
-    firstWordFlags = ['commands', 'folders', 'files'];
+    firstWordFlags = ['commands'];
     allowAutoComplete = true;
 
     autoCompleteState = {
