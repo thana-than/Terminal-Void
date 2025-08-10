@@ -18,6 +18,7 @@ export class Sequence extends CLI {
         this.sequence = sequence;
         this.startMessage = startMessage;
         this.focusOnInputOnRun = false;
+        this.disableInputOnRun = true;
         this.interpreter = new Interpreter([NEXT_SEQUENCE_COMMAND], NEXT_SEQUENCE_COMMAND);
         if (startImmediate)
             this.sendCommand('next');

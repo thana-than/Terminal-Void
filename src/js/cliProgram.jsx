@@ -21,6 +21,7 @@ export default class CLI extends Program {
     initialized = false;
     showSendButton = true;
     focusOnInputOnRun = true;
+    disableInputOnRun = false;
     outputRef = React.createRef();
 
     pressToClose_excludedKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'])
@@ -510,11 +511,11 @@ export default class CLI extends Program {
         this.queue_snapToBottom = true;
         let inputElement = document.getElementById('input');
         if (inputElement) {
-            inputElement.disabled = false;
-            if (this.focusOnInputOnRun)
+            inputElement.disabled = this.disableInputOnRun;
+            if (!inputElement.disabled && this.focusOnInputOnRun)
                 inputElement.focus();
+            this.allowInputBoxButton(inputElement.disabled);
         }
-        this.allowInputBoxButton(false);
     }
 
     disableInput(message = "") {
