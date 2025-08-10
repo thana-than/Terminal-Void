@@ -169,6 +169,13 @@ export default class CLI extends Program {
             document.body.focus();
     }
 
+    allowInputBoxButton(allow = true) {
+        let inputBoxButton = document.getElementById('inputBoxButton');
+        if (!inputBoxButton)
+            return;
+        inputBoxButton.style.pointerEvents = allow ? 'auto' : 'none';
+    }
+
     waitForRef(ref, timeout = 200, interval = 50) {
         return new Promise((resolve, reject) => {
             const start = Date.now();
@@ -502,16 +509,20 @@ export default class CLI extends Program {
     run() {
         this.queue_snapToBottom = true;
         let inputElement = document.getElementById('input');
-        if (this.focusOnInputOnRun && inputElement) {
+        if (inputElement) {
             inputElement.disabled = false;
-            inputElement.focus();
+            if (this.focusOnInputOnRun)
+                inputElement.focus();
         }
+        this.allowInputBoxButton(false);
     }
 
     disableInput(message = "") {
         let inputElement = document.getElementById('input');
         inputElement.value = message;
         inputElement.disabled = true;
+        this.allowInputBoxButton(true);
+
         this.loseInputFocus();
     }
 
@@ -527,6 +538,18 @@ export default class CLI extends Program {
         }
     }
 
+    inputBoxClickedEvent() {
+        this.simulateKeydown('Enter');
+    }
+
+    sendButtonClickedEvent() {
+        this.simulateKeydown('Enter');
+    }
+
+    simulateKeydown(key) {
+        this.onKeyDown(new KeyboardEvent('keydown', { key: key, code: 'simulated' }));
+    }
+
     draw() {
         this.preDrawStep();
 
@@ -537,9 +560,10 @@ export default class CLI extends Program {
                         <React.Fragment key={block.props.id}>{block}</React.Fragment>
                     ))}
                 </Scrollbar>
-                <div className='inputBox'>
+                <div className='inputBox' >
+                    <div id='inputBoxButton' style={{ pointerEvents: 'none' }} className='fill' onClick={() => this.inputBoxClickedEvent()} ></div>
                     <input type="text" tabIndex="2" id="input" onChange={this.onInputChanged} autoFocus></input>
-                    <button className="sendButton" tabIndex="-1" onClick={() => this.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', code: 'simulated' }))}>
+                    <button className="sendButton" tabIndex="-1" onClick={() => this.sendButtonClickedEvent()}>
                         <svg viewBox="0 0 1080 1080" className="arrowIcon">
                             <path d="M216.711,216.711L863.289,540L216.711,863.289" />
                         </svg>
