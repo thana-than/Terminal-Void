@@ -7,6 +7,7 @@ export default class Program extends React.Component {
     themeStyle = "programTheme";
     canCloseOnKey = true;
 
+    escapeKeys = new Set(['Escape', 'Backspace'])
     toolbarExcludeFlags = {};
 
     event_keyDown(event) {
@@ -23,10 +24,7 @@ export default class Program extends React.Component {
         if (!this.canCloseOnKey)
             return false;
 
-        const key = event.key.toLowerCase();
-        const exitRequested = //* Key tests
-            key == "escape"
-        // || key == "c" && event.ctrlKey; //? was a good idea initially but would remove copy paste functionality from game
+        const exitRequested = this.escapeKeys.has(event.key);//* Key tests
 
         if (exitRequested) {
             this.close();
