@@ -55,6 +55,7 @@ export default class CLI extends Program {
     constructor(interpreter) {
         super();
         this.interpreter = interpreter;
+        this.escapeKeys.delete("Backspace");
     }
 
     initialize() {

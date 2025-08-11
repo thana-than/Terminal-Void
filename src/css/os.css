@@ -223,7 +223,14 @@ img {
 }
 
 /** For phone screens in portait mode: raise the terminal higher so you can use the on screen keyboard */
-@media screen and (orientation: portrait) {
+@media screen and (orientation: portrait) and (max-width: 1000px) {
+    .program {
+        top: 40%;
+        transform: translate(-50%, -60%);
+    }
+}
+
+@media screen and (orientation: portrait) and (max-width: 600px) {
     .program {
         top: 25%;
         transform: translate(-50%, -75%);
